@@ -4,8 +4,7 @@
 #include <netinet/in.h>
 #include <getopt.h> // getting the arguments from cli
 #include <unistd.h> // for closing the socket descriptor
-#include <string.h> // for memset
-// #include "transmitter.h"
+// #include "transmitter.hpp"
 
 #define BUFFER_LENGTH 512
 #define SERVER "127.0.0.1"

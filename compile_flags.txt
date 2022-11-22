@@ -1,2 +1,2 @@
--I
-./include
+-I./include
+-std=c++17

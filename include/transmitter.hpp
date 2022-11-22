@@ -2,9 +2,9 @@
 #define TRANSMITTER
 
 class Transmitter {
-    public:
-        void run(){}
-        Transmitter(){}
+public:
+    Transmitter();
+    ~Transmitter();
 };
 
 #endif
