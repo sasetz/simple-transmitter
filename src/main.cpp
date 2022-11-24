@@ -1,60 +1,92 @@
-#include <iostream>
-#include <sys/socket.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
+#include <bits/getopt_core.h>
+#include <cstdlib>
+#include <ios>
+#include <iostream>
+#include <memory>
+#include <iomanip>
 #include <getopt.h> // getting the arguments from cli
-#include <unistd.h> // for closing the socket descriptor
+#include <ostream>
+#include "socket.hpp"
 // #include "transmitter.hpp"
 
 #define BUFFER_LENGTH 512
-#define SERVER "127.0.0.1"
-#define PORT 8888
+#define TIMEOUT 30
 
 int main(int argc, char* argv[]) {
-    struct sockaddr_in inputSocketAddress, outputSocketAddress;
-    char buffer[BUFFER_LENGTH] = { 0 };
-    socklen_t addressLength = sizeof(outputSocketAddress);
+    unsigned long externalIp;
+    unsigned short internalPort, externalPort;
+    int opt;
+    bool isReceiver = false, hasInternals = false, hasExternals = false;
 
-    int socketDescriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if(socketDescriptor == -1) {
-        std::cerr << "Could not open the socket!" << std::endl;
-        std::exit(1);
-    }
-
-    inputSocketAddress = {0, 0, 0, 0};
-
-    inputSocketAddress.sin_family = AF_INET;
-    inputSocketAddress.sin_port = htons(PORT);
-    inputSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if( bind(socketDescriptor, (struct sockaddr*)&inputSocketAddress, sizeof(inputSocketAddress)) == -1) {
-        std::cerr << "Could not bind the socket!" << std::endl;
-        std::exit(1);
-    }
-
-    int receivedLength;
-    while(true) {
-        std::cout << "Waiting for data..." << std::endl;
-
-        receivedLength = recvfrom(socketDescriptor, buffer, BUFFER_LENGTH, 0, (struct sockaddr *) &outputSocketAddress,
-                &addressLength);
-
-        if(receivedLength == -1) {
-            std::cerr << "Could not wait for data" << std::endl;
-            std::exit(1);
-        }
-
-        std::cout << "Received data packet from: " << inet_ntoa(outputSocketAddress.sin_addr) << ":"
-            << ntohs(outputSocketAddress.sin_port) << std::endl;
-        std::cout << "Data: " << buffer << std::endl;
-
-        if(sendto(socketDescriptor, buffer, BUFFER_LENGTH, 0, (struct sockaddr*)&outputSocketAddress, addressLength)
-                == -1) {
-            std::cerr << "Could not send the data back!" << std::endl;
-            std::exit(1);
+    while((opt = getopt(argc, argv, "rp:o:e:")) != -1) {
+        switch (opt) {
+            case 'p':
+                // internal port
+                hasInternals = true;
+                internalPort = atoi(optarg);
+                break;
+            case 'o':
+                // external IP
+                hasExternals = true;
+                externalIp = ntohl(inet_addr(optarg));
+                break;
+            case 'e':
+                // external port
+                hasExternals = true;
+                externalPort = atoi(optarg);
+                break;
+            case 'r':
+                // this is a receiver
+                isReceiver = true;
         }
     }
 
-    close(socketDescriptor);
+    std::unique_ptr<Socket> socket(hasInternals ? new Socket(internalPort) : new Socket());
+    if(isReceiver) {
+        std::cout << "Init complete. Listening for " << TIMEOUT << " seconds" << std::endl;
+
+        unsigned long receivedIp;
+        unsigned short receivedPort;
+        std::vector<char> data;
+
+        Socket::ReceiveStatus status;
+        do{
+            status = socket->listen(receivedIp, receivedPort, data, 512, TIMEOUT * 1000);
+            if(status != Socket::RECEIVED)
+                break;
+            std::cout << "Received packet:\n";
+            int count = 0;
+            for(auto i = data.begin(); i != data.end(); i++, count++){
+                if(count == 16) {
+                    std::cout << std::endl;
+                    count = 0;
+                }
+                count++;
+                std::cout << std::setw(2) << std::setfill('0') << std::hex << (int) *i << " ";
+            } 
+
+            std::cout << std::endl << "Interpreted as characters:" << std::endl;
+            for(auto i = data.begin(); i != data.end(); i++) {
+                std::cout << *i;
+            }
+        } while(true);
+    } else {
+        if(!hasExternals) {
+            std::cerr << "To send, please, enter external IP and port\n";
+            std::exit(1);
+        }
+        std::cout << "Init complete. ";
+        std::string inputData;
+        while(true) {
+            std::cout << "Input data to send:" << std::endl;
+            std::cin >> inputData;
+            if(inputData == "exit")
+                break;
+            inputData.push_back('\n');
+            std::cout << "Sending your data..." << std::endl;
+            socket->send(externalIp, externalPort, std::vector<char>(inputData.begin(), inputData.end()));
+        }
+    }
     return 0;
 }
