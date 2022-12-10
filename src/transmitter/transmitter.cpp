@@ -1,9 +1,5 @@
 #include "transmitter.hpp"
 
-Transmitter::Transmitter() {
-    
-}
+Transmitter::Transmitter() = default;
 
-Transmitter::~Transmitter() {
-
-}
+Transmitter::~Transmitter() = default;

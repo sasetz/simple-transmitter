@@ -1,8 +1,6 @@
 #ifndef SOCKET
 #define SOCKET
 
-#define MAX_BYTES 1024
-
 #include <exception>
 #include <netinet/in.h>
 #include <string>

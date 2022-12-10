@@ -4,6 +4,10 @@ project(simple-transmitter)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_executable(${PROJECT_NAME} src/main/main.cpp src/transmitter/transmitter.cpp src/transmitter/socket.cpp src/main/input.cpp src/input/socketAddress.cpp src/packet/packet.cpp src/packet/packetBuilder.cpp src/packet/byteData.cpp)
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+# set some parameters at build time
+set(MAXIMUM_PACKET_LENGTH 1472)
+set(MAXIMUM_DATA_SIZE 1452)
+set(MAXIMUM_FILENAME_LENGTH 255)
+add_subdirectory(src)
+add_subdirectory(dependencies/doctest)
 add_subdirectory(tests)

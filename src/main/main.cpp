@@ -7,10 +7,9 @@
 #include <iomanip>
 #include <getopt.h> // getting the arguments from cli
 #include <ostream>
-#include "../transmitter/socket.hpp"
+#include "socket.hpp"
 // #include "transmitter.hpp"
 
-#define BUFFER_LENGTH 512
 #define TIMEOUT 30
 
 int main(int argc, char* argv[]) {

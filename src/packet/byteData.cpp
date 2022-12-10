@@ -1,5 +1,4 @@
 #include "byteData.hpp"
-#include "parameters.hpp"
 #include <netinet/in.h>
 
 ByteData::ByteData() {
