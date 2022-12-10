@@ -1,12 +1,14 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 #include "socket.hpp"
-#include <arpa/inet.h>
 #include <iostream>
 #include <netinet/in.h>
 #include <ostream>
 #include <string>
 #include <sys/socket.h>
 #include <sys/poll.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 
 Socket::Socket() noexcept(false) {
@@ -51,11 +53,11 @@ void Socket::initialize(const unsigned long ipAddress, const unsigned short port
     }
 }
 
-void Socket::send(const unsigned long ipAddress, const unsigned short port, const std::vector<char> data) {
+void Socket::send(const unsigned long ipAddress, const unsigned short port, const std::vector<char>& data) const {
     int bytesSent = 0;
     int code; // variable for output codes
     std::vector<char> toSend(data);
-    struct sockaddr_in externalSocketAddress;
+    struct sockaddr_in externalSocketAddress{};
     memset(&externalSocketAddress, 0, sizeof(struct sockaddr_in));
 
     externalSocketAddress.sin_family = PF_INET;
@@ -71,8 +73,8 @@ void Socket::send(const unsigned long ipAddress, const unsigned short port, cons
     }
 }
 
-Socket::ReceiveStatus Socket::listen(unsigned long &ipAddress, unsigned short &port, std::vector<char> &data, const int size, const int timeout) {
-    struct pollfd fds;
+Socket::ReceiveStatus Socket::listen(unsigned long &ipAddress, unsigned short &port, std::vector<char> &data, const int size, const int timeout) const {
+    struct pollfd fds{};
     fds.events = POLLIN;
     fds.fd = this->socketDescriptor;
 
@@ -92,7 +94,7 @@ Socket::ReceiveStatus Socket::listen(unsigned long &ipAddress, unsigned short &p
         char *buffer = new char[size];
         for(int i = 0; i < size; i++)
             buffer[i] = 0;
-        struct sockaddr_in externalSocketAddress;
+        struct sockaddr_in externalSocketAddress{};
         socklen_t addressLength;
         code = recvfrom(this->socketDescriptor, buffer, size, 0, (struct sockaddr*)&externalSocketAddress, &addressLength);
         if(code <= 0)
@@ -124,3 +126,5 @@ Socket::ReceiveStatus Socket::listen(unsigned long &ipAddress, unsigned short &p
 Socket::~Socket() {
     close(this->socketDescriptor);
 }
+
+#pragma clang diagnostic pop

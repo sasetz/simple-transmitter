@@ -39,6 +39,10 @@ int main(int argc, char* argv[]) {
             case 'r':
                 // this is a receiver
                 isReceiver = true;
+                break;
+            default:
+                std::cout << "Unexpected option! Exiting..." << std::endl;
+                std::exit(1);
         }
     }
 
@@ -67,8 +71,8 @@ int main(int argc, char* argv[]) {
             } 
 
             std::cout << std::endl << "Interpreted as characters:" << std::endl;
-            for(auto i = data.begin(); i != data.end(); i++) {
-                std::cout << *i;
+            for(char & i : data) {
+                std::cout << i;
             }
         } while(true);
     } else {
