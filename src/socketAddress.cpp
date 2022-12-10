@@ -1,22 +1,24 @@
 #include "input/socketAddress.hpp"
 
-SocketAddress::SocketAddress(unsigned long internalIp, unsigned short internalPort, unsigned long externalIp, unsigned short externalPort):
+SocketAddress::SocketAddress(unsigned long internalIp, unsigned short internalPort,
+                             unsigned long externalIp, unsigned short externalPort):
     externalIp(externalIp),
     externalPort(externalPort),
     internalIp(internalIp),
     internalPort(internalPort) {};
 
-SocketAddress::SocketAddress(std::string internal, std::string external) {
-    char addressDelimeter = ':';
-    auto delimeterPosition = internal.find(addressDelimeter);
-    this->internalIp = inet_addr(internal.substr(0, delimeterPosition).c_str());
+SocketAddress::SocketAddress(const std::string& internal,
+                             const std::string& external) {
+    char addressDelimiter = ':';
+    auto delimiterPosition = internal.find(addressDelimiter);
+    this->internalIp = inet_addr(internal.substr(0, delimiterPosition).c_str());
     // this line might drop an exception because of wrong port number, but that ok
-    this->internalPort = htons(std::stoi(internal.substr(delimeterPosition, internal.size())));
+    this->internalPort = htons(std::stoi(internal.substr(delimiterPosition, internal.size())));
 
 
-    delimeterPosition = external.find(addressDelimeter);
-    this->externalIp = inet_addr(external.substr(0, delimeterPosition).c_str());
+    delimiterPosition = external.find(addressDelimiter);
+    this->externalIp = inet_addr(external.substr(0, delimiterPosition).c_str());
     // this line might drop an exception because of wrong port number, but that ok
-    this->externalPort = htons(std::stoi(external.substr(delimeterPosition, external.size())));
+    this->externalPort = htons(std::stoi(external.substr(delimiterPosition, external.size())));
 };
 

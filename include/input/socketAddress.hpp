@@ -16,7 +16,7 @@ private:
 public:
     SocketAddress(unsigned long internalIp, unsigned short internalPort, unsigned long externalIp, unsigned short externalPort);
 
-    SocketAddress(std::string internal, std::string external);
+    SocketAddress(const std::string& internal, const std::string& external);
 };
 
 #endif
