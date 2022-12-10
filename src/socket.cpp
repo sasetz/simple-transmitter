@@ -1,6 +1,5 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshadow"
-#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 #include "socket.hpp"
 #include <iostream>
 #include <netinet/in.h>

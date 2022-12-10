@@ -38,11 +38,11 @@ public:
 
 private:
     // in host format
-    unsigned long ipAddress;
-    unsigned short port;
-    struct sockaddr_in internalSocketAddress;
-    struct sockaddr_in externalSocketAddress;
-    int socketDescriptor; // it's not just a number, it's a descriptor!!!!!!!
+    unsigned long ipAddress{};
+    unsigned short port{};
+    struct sockaddr_in internalSocketAddress{};
+    struct sockaddr_in externalSocketAddress{};
+    int socketDescriptor{}; // it's not just a number, it's a descriptor!!!!!!!
     void initialize(unsigned long ipAddress, unsigned short port);
 };
 
