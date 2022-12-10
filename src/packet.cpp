@@ -24,8 +24,8 @@ void Packet::setKeepAlive() {
     this->liv = true;
 }
 
-void Packet::setFile(const std::string& name) {
-    if(name.size() > FILENAME_MAX) {
+void Packet::setFile(const std::string &name) {
+    if (name.size() > FILENAME_MAX) {
         throw PacketException("File name has exceeded the maximum filename length");
     }
 
@@ -44,5 +44,20 @@ void Packet::setFragment(ByteData &dataBlock, unsigned short fragmentLength) {
 }
 
 ByteData Packet::build() {
-    return {};
+    ByteData bytes(sequenceNumber);
+    bytes += ByteData(acknowledgementNumber);
+    bytes += ByteData(checksum); // todo: checksum calculation using zlib
+
+    // insert flags
+    bytes += opn;
+    bytes += rst;
+    bytes += ack;
+    bytes += nak;
+    bytes += liv;
+    bytes += fil;
+    bytes += txt;
+    bytes += frg;
+
+    bytes += this->data;
+    return bytes;
 }
