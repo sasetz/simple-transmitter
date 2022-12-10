@@ -1,4 +1,4 @@
-#include "packet/byteData.hpp"
+#include "byteData.hpp"
 #include "parameters.hpp"
 #include <netinet/in.h>
 

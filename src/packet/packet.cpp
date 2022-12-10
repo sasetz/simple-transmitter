@@ -1,4 +1,4 @@
-#include "packet/packet.hpp"
+#include "packet.hpp"
 
 Packet::Packet() = default;
 

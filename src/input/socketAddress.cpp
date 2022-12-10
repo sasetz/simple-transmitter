@@ -1,4 +1,4 @@
-#include "input/socketAddress.hpp"
+#include "socketAddress.hpp"
 
 SocketAddress::SocketAddress(unsigned long internalIp, unsigned short internalPort,
                              unsigned long externalIp, unsigned short externalPort):

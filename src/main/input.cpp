@@ -1,5 +1,5 @@
 #include <getopt.h> // getting the arguments from cli
-#include "input/inputParameters.hpp"
+#include "../input/inputParameters.hpp"
 
 enum class InputMode {
     Interactive,

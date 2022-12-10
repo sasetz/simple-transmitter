@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <getopt.h> // getting the arguments from cli
 #include <ostream>
-#include "socket.hpp"
+#include "../transmitter/socket.hpp"
 // #include "transmitter.hpp"
 
 #define BUFFER_LENGTH 512
