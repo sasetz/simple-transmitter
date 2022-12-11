@@ -43,12 +43,13 @@ void Packet::setFragment(const ByteData& dataBlock, unsigned short fragmentLengt
     this->data = dataBlock;
     this->fragLength = fragmentLength;
     this->length = this->data.size();
+    this->checksum = generateChecksum(this->data);
 }
 
 ByteData Packet::build() {
     ByteData bytes(sequenceNumber);
     bytes += ByteData(acknowledgementNumber);
-    bytes += ByteData(checksum); // todo: checksum calculation using zlib
+    bytes += ByteData(checksum);
 
     // insert flags
     std::byte flags{0};
