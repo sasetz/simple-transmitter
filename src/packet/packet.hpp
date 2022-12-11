@@ -54,15 +54,31 @@ public:
 
     // exception that signals that something went wrong while creating a packet
     class PacketException : public std::exception {
+    public:
         std::string message;
 
         [[nodiscard]] const char * what() const noexcept override {
             return this->message.data();
         }
 
-    public:
         explicit PacketException(std::string msg) {
             this->message = std::move(msg);
+        }
+    };
+
+    // exception that is thrown when the packet needs more byte data to be created
+    // e.g. byte data is smaller than 20 bytes (packet header), or the length in the header is bigger than the actual
+    // data block
+    class PacketInsufficientDataException: public std::exception {
+    public:
+        std::string message;
+
+        [[nodiscard]] const char * what() const noexcept override {
+            return this->message.data();
+        }
+
+        explicit PacketInsufficientDataException() {
+            this->message = "The byte data passed is not enough to create a whole packet!";
         }
     };
 };

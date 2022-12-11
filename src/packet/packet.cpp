@@ -79,6 +79,9 @@ ByteData Packet::build() {
 }
 
 Packet::Packet(ByteData bytePacket) {
+    // size of the header is at least 20 bytes
+    if(bytePacket.size() < 20)
+        throw PacketInsufficientDataException();
     this->sequenceNumber = ByteData::bytesToLong(bytePacket.slice(0, 4).getData());
     this->acknowledgementNumber = ByteData::bytesToLong(bytePacket.slice(4, 8).getData());
     this->checksum = ByteData::bytesToLong(bytePacket.slice(8, 12).getData());
@@ -104,7 +107,10 @@ Packet::Packet(ByteData bytePacket) {
     this->length = ByteData::bytesToShort(bytePacket.slice(16, 18).getData());
     this->fragLength = ByteData::bytesToShort(bytePacket.slice(18, 20).getData());
 
-    this->data = bytePacket.slice(20);
+    // check if the header length is larger than the actual data block length
+    if(bytePacket.size() < 20 + this->length)
+        throw PacketInsufficientDataException();
+    this->data = bytePacket.slice(20, this->length + 20);
 }
 
 unsigned long Packet::generateChecksum(ByteData data) {
