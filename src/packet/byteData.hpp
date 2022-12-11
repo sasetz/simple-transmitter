@@ -37,6 +37,8 @@ public:
     ByteData &operator+=(unsigned short other);
     ByteData &operator+=(bool other);
 
+    size_t size();
+
     // exceptions that can occur while transforming byte data
     class ByteException : public std::exception {
         std::string message;

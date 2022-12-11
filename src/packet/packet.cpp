@@ -1,6 +1,6 @@
 #include "packet.hpp"
 
-Packet::Packet() = default;
+Packet::Packet(unsigned long seqNumber) : sequenceNumber(seqNumber) {}
 
 void Packet::setOpen() {
     this->opn = true;

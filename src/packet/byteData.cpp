@@ -113,3 +113,7 @@ ByteData &ByteData::operator+=(bool other) {
     this->data.push_back((std::byte)(other ? 1 : 0));
     return *this;
 }
+
+size_t ByteData::size() {
+    return this->data.size();
+}
