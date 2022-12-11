@@ -37,10 +37,11 @@ void Packet::setText() {
     this->txt = true;
 }
 
-void Packet::setFragment(ByteData &dataBlock, unsigned short fragmentLength) {
+void Packet::setFragment(const ByteData& dataBlock, unsigned short fragmentLength) {
     this->frg = true;
-    this->data = std::move(dataBlock);
+    this->data = dataBlock;
     this->fragLength = fragmentLength;
+    this->length = this->data.size();
 }
 
 ByteData Packet::build() {
@@ -49,14 +50,27 @@ ByteData Packet::build() {
     bytes += ByteData(checksum); // todo: checksum calculation using zlib
 
     // insert flags
-    bytes += opn;
-    bytes += rst;
-    bytes += ack;
-    bytes += nak;
-    bytes += liv;
-    bytes += fil;
-    bytes += txt;
-    bytes += frg;
+    std::byte flags{0};
+
+    flags = (flags << 1) | (std::byte)opn;
+    flags = (flags << 1) | (std::byte)opn;
+    flags = (flags << 1) | (std::byte)rst;
+    flags = (flags << 1) | (std::byte)ack;
+    flags = (flags << 1) | (std::byte)nak;
+    flags = (flags << 1) | (std::byte)liv;
+    flags = (flags << 1) | (std::byte)fil;
+    flags = (flags << 1) | (std::byte)txt;
+    flags = (flags << 1) | (std::byte)frg;
+
+    bytes += flags;
+
+    // 3 reserved bytes
+    bytes += (std::byte)0;
+    bytes += (std::byte)0;
+    bytes += (std::byte)0;
+
+    bytes += this->length;
+    bytes += this->fragLength;
 
     bytes += this->data;
     return bytes;

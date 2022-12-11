@@ -35,7 +35,7 @@ public:
     ByteData &operator+=(ByteData other);
     ByteData &operator+=(unsigned long other);
     ByteData &operator+=(unsigned short other);
-    ByteData &operator+=(bool other);
+    ByteData &operator+=(std::byte other);
 
     size_t size();
 

@@ -38,11 +38,11 @@ Packet PacketBuilder::getHotTextStart() {
 
 Packet PacketBuilder::getHotTextFragmentStart(std::string textBlock) {
     // add the data block size to the sequence number to indicate how much we've sent
-    this->sequenceNumber += textBlock.size();
     Packet temp(this->sequenceNumber);
     temp.setOpen();
     temp.setText();
     ByteData data(textBlock);
+    this->sequenceNumber += data.size();
     temp.setFragment(data, this->fragmentLength);
     return temp;
 }
@@ -63,10 +63,10 @@ Packet PacketBuilder::getTextStart() {
 
 Packet PacketBuilder::getTextFragmentStart(std::string textBlock) {
     // add the data block size to the sequence number to indicate how much we've sent
-    this->sequenceNumber += textBlock.size();
     Packet temp(this->sequenceNumber);
     temp.setText();
     ByteData data(textBlock);
+    this->sequenceNumber += data.size();
     temp.setFragment(data, this->fragmentLength);
     return temp;
 }
@@ -90,7 +90,7 @@ Packet PacketBuilder::getKeepAlive() {
     return temp;
 }
 
-Packet PacketBuilder::getFragment(ByteData &dataBlock) {
+Packet PacketBuilder::getFragment(ByteData dataBlock) {
     Packet temp(this->sequenceNumber);
     temp.setFragment(dataBlock, this->fragmentLength);
     return temp;

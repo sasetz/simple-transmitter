@@ -28,7 +28,7 @@ public:
 
     Packet getKeepAlive();
 
-    Packet getFragment(ByteData &dataBlock);
+    Packet getFragment(ByteData dataBlock);
     Packet getTextFragment(std::string textBlock);
 
     Packet getFragmentStop(ByteData dataBlock);

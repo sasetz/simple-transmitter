@@ -42,7 +42,7 @@ public:
 
     void setText();
 
-    void setFragment(ByteData &dataBlock, unsigned short fragmentLength);
+    void setFragment(const ByteData& dataBlock, unsigned short fragmentLength);
 
     // checks if the packet is valid and assembles it to bytes
     ByteData build();
