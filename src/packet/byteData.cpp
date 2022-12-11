@@ -117,3 +117,15 @@ ByteData &ByteData::operator+=(std::byte other) {
     this->data.push_back(other);
     return *this;
 }
+
+std::byte ByteData::operator[](int index) {
+    return this->data.at(index);
+}
+
+ByteData ByteData::slice(int from, int to) {
+    return ByteData(std::vector<std::byte>(this->data.begin() + from, this->data.begin() + to));
+}
+
+ByteData ByteData::slice(int from) {
+    return ByteData(std::vector<std::byte>(this->data.begin() + from, this->data.end()));
+}

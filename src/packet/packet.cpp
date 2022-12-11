@@ -65,13 +65,42 @@ ByteData Packet::build() {
     bytes += flags;
 
     // 3 reserved bytes
-    bytes += (std::byte)0;
-    bytes += (std::byte)0;
-    bytes += (std::byte)0;
+    bytes += std::byte{0};
+    bytes += std::byte{0};
+    bytes += std::byte{0};
 
     bytes += this->length;
     bytes += this->fragLength;
 
     bytes += this->data;
     return bytes;
+}
+
+Packet::Packet(ByteData bytePacket) {
+    this->sequenceNumber = ByteData::bytesToLong(bytePacket.slice(0, 4).getData());
+    this->acknowledgementNumber = ByteData::bytesToLong(bytePacket.slice(4, 8).getData());
+    this->checksum = ByteData::bytesToLong(bytePacket.slice(8, 12).getData());
+
+    auto flags = bytePacket[12];
+    this->frg = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->rst = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->ack = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->nak = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->liv = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->fil = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->txt = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->frg = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+
+    this->length = ByteData::bytesToShort(bytePacket.slice(16, 18).getData());
+    this->fragLength = ByteData::bytesToShort(bytePacket.slice(18, 20).getData());
+
+    this->data = bytePacket.slice(20);
 }

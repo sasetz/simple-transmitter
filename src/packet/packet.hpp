@@ -25,8 +25,11 @@ private:
 
     ByteData data;
 
+    Packet() = default;
+
 public:
     explicit Packet(unsigned long seqNumber);
+    explicit Packet(ByteData bytePacket);
 
     void setOpen();
 

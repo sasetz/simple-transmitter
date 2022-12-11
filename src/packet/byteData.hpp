@@ -36,6 +36,9 @@ public:
     ByteData &operator+=(unsigned long other);
     ByteData &operator+=(unsigned short other);
     ByteData &operator+=(std::byte other);
+    std::byte operator[](int index);
+    ByteData slice(int from, int to);
+    ByteData slice(int from);
 
     size_t size();
 
