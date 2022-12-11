@@ -1,12 +1,18 @@
 # simple-transmitter
 Simple transmitter written in C++ for sending text and files
 
+## Used libraries
+
+- ZLib
+- Doctest
+
 ## How to build
 
 Requirements:
 
 - CMake, version 3.25^
-- G++
+- ZLib
+- Git
 
 ```
 git clone https://github.com/sasetz/simple-transmitter.git
