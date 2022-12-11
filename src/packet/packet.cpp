@@ -1,4 +1,5 @@
 #include "packet.hpp"
+#include "zlib.h"
 
 Packet::Packet(unsigned long seqNumber) : sequenceNumber(seqNumber) {}
 
@@ -103,4 +104,13 @@ Packet::Packet(ByteData bytePacket) {
     this->fragLength = ByteData::bytesToShort(bytePacket.slice(18, 20).getData());
 
     this->data = bytePacket.slice(20);
+}
+
+unsigned long Packet::generateChecksum(ByteData data) {
+    unsigned long crc = crc32(0L, Z_NULL, 0);
+
+    for(int i = 0; i < data.size(); i++) {
+        crc = crc32(crc, reinterpret_cast<const Bytef *>(&(data.getData()[i])), 1);
+    }
+    return crc;
 }

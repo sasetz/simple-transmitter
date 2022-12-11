@@ -27,6 +27,7 @@ private:
 
     Packet() = default;
 
+
 public:
     explicit Packet(unsigned long seqNumber);
     explicit Packet(ByteData bytePacket);
@@ -49,6 +50,7 @@ public:
 
     // checks if the packet is valid and assembles it to bytes
     ByteData build();
+    static unsigned long generateChecksum(ByteData data);
 
     // exception that signals that something went wrong while creating a packet
     class PacketException : public std::exception {

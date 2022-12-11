@@ -18,7 +18,7 @@ add_library(packet STATIC
         packet/packetBuilder.cpp)
 target_include_directories(packet
         PUBLIC packet)
-target_link_libraries(packet input)
+target_link_libraries(packet input ZLIB::ZLIB)
 target_compile_definitions(packet
         PRIVATE MAXIMUM_PACKET_LENGTH=${MAXIMUM_PACKET_LENGTH}
         PRIVATE MAXIMUM_DATA_SIZE=${MAXIMUM_DATA_SIZE}

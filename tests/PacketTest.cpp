@@ -165,4 +165,10 @@ TEST_CASE("creating an open packet") {
     CHECK_EQ(data[19], std::byte{0x00});
 }
 
+TEST_CASE("checksum calculation works") {
+    ByteData data(0xBB'69'5F'C8UL);
+    unsigned long output = Packet::generateChecksum(data);
+    CHECK_EQ(output, 78507313UL);
+}
+
 TEST_SUITE_END();
