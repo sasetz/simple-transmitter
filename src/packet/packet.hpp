@@ -27,6 +27,7 @@ private:
 
     Packet() = default;
 
+    static std::string toHex(std::byte number);
 
 public:
     explicit Packet(unsigned long seqNumber);
@@ -51,6 +52,7 @@ public:
     // checks if the packet is valid and assembles it to bytes
     ByteData build();
     static unsigned long generateChecksum(ByteData data);
+    std::string dump();
 
     // exception that signals that something went wrong while creating a packet
     class PacketException : public std::exception {

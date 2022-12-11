@@ -7,7 +7,8 @@ target_include_directories(input
 target_compile_definitions(input
         PRIVATE MAXIMUM_PACKET_LENGTH=${MAXIMUM_PACKET_LENGTH}
         PRIVATE MAXIMUM_DATA_SIZE=${MAXIMUM_DATA_SIZE}
-        PRIVATE MAXIMUM_FILENAME_LENGTH=${MAXIMUM_FILENAME_LENGTH})
+        PRIVATE MAXIMUM_FILENAME_LENGTH=${MAXIMUM_FILENAME_LENGTH}
+        PRIVATE RECEIVE_BUFFER_SIZE=${RECEIVE_BUFFER_SIZE})
 
 add_library(packet STATIC
         packet/byteData.hpp
@@ -22,7 +23,8 @@ target_link_libraries(packet input ZLIB::ZLIB)
 target_compile_definitions(packet
         PRIVATE MAXIMUM_PACKET_LENGTH=${MAXIMUM_PACKET_LENGTH}
         PRIVATE MAXIMUM_DATA_SIZE=${MAXIMUM_DATA_SIZE}
-        PRIVATE MAXIMUM_FILENAME_LENGTH=${MAXIMUM_FILENAME_LENGTH})
+        PRIVATE MAXIMUM_FILENAME_LENGTH=${MAXIMUM_FILENAME_LENGTH}
+        PRIVATE RECEIVE_BUFFER_SIZE=${RECEIVE_BUFFER_SIZE})
 
 add_library(transmitter STATIC
         transmitter/socket.hpp
@@ -35,7 +37,8 @@ target_link_libraries(transmitter packet input)
 target_compile_definitions(transmitter
         PRIVATE MAXIMUM_PACKET_LENGTH=${MAXIMUM_PACKET_LENGTH}
         PRIVATE MAXIMUM_DATA_SIZE=${MAXIMUM_DATA_SIZE}
-        PRIVATE MAXIMUM_FILENAME_LENGTH=${MAXIMUM_FILENAME_LENGTH})
+        PRIVATE MAXIMUM_FILENAME_LENGTH=${MAXIMUM_FILENAME_LENGTH}
+        PRIVATE RECEIVE_BUFFER_SIZE=${RECEIVE_BUFFER_SIZE})
 
 add_executable(${PROJECT_NAME} main/main.cpp)
 target_link_libraries(${PROJECT_NAME} transmitter)

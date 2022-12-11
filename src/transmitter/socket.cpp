@@ -9,30 +9,22 @@
 #include <sys/poll.h>
 #include <cstring>
 #include <unistd.h>
+#include <optional>
 
-Socket::Socket() noexcept(false) {
-    this->initialize(INADDR_ANY, 0);
+
+Socket::Socket(SocketAddress address): socketAddress(address) {
+    this->initialize();
 }
 
-Socket::Socket(const unsigned short port) noexcept(false) {
-    this->initialize(INADDR_ANY, port);
-}
-
-Socket::Socket(const unsigned long ipAddress, const unsigned short port) {
-    this->initialize(ipAddress, port);
-}
-
-void Socket::initialize(const unsigned long ipAddress, const unsigned short port) noexcept(false) {
-    this->ipAddress = ipAddress;
-    this->port = port;
-    
+void Socket::initialize() noexcept(false) {
     // zero out the internal socket address
-    memset((void *)&this->internalSocketAddress, 0, sizeof(this->internalSocketAddress));
+    struct sockaddr_in internalSocketAddress{};
+    memset((void *)&internalSocketAddress, 0, sizeof(internalSocketAddress));
 
     // assign proper values
-    this->internalSocketAddress.sin_family = AF_INET;
-    this->internalSocketAddress.sin_addr.s_addr = htonl(ipAddress);
-    this->internalSocketAddress.sin_port = htons(port);
+    internalSocketAddress.sin_family = AF_INET;
+    internalSocketAddress.sin_addr.s_addr = this->socketAddress.getNetworkInternalIp();
+    internalSocketAddress.sin_port = this->socketAddress.getNetworkInternalPort();
 
     this->socketDescriptor = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(this->socketDescriptor == -1) {
@@ -43,8 +35,8 @@ void Socket::initialize(const unsigned long ipAddress, const unsigned short port
     // bind the socket
     if( bind(
                 this->socketDescriptor,
-                (struct sockaddr*)&this->internalSocketAddress,
-                sizeof(this->internalSocketAddress)
+                (struct sockaddr*)&internalSocketAddress,
+                sizeof(internalSocketAddress)
                 )
             == -1) {
         // couldn't bind the socket, throw an error
@@ -52,74 +44,99 @@ void Socket::initialize(const unsigned long ipAddress, const unsigned short port
     }
 }
 
-void Socket::send(const unsigned long ipAddress, const unsigned short port, const std::vector<char>& data) const {
+void Socket::send(Packet packet) const {
     int bytesSent = 0;
     int code; // variable for output codes
-    std::vector<char> toSend(data);
+    ByteData rawPacket = packet.build();
+    auto totalBytes = rawPacket.size(); // size of the packet that needs to be sent
+    std::vector<std::byte> toSend = std::move(rawPacket.getData());
+
     struct sockaddr_in externalSocketAddress{};
     memset(&externalSocketAddress, 0, sizeof(struct sockaddr_in));
 
     externalSocketAddress.sin_family = PF_INET;
-    externalSocketAddress.sin_port = htons(port);
-    externalSocketAddress.sin_addr.s_addr = htonl(ipAddress);
-    
-    while(bytesSent < data.size()) {
-        code = sendto(this->socketDescriptor, toSend.data(), toSend.size(), 0, (struct sockaddr*)&externalSocketAddress, sizeof(struct sockaddr));
+    externalSocketAddress.sin_port = this->socketAddress.getNetworkExternalPort();
+    externalSocketAddress.sin_addr.s_addr = this->socketAddress.getNetworkExternalIp();
+
+    while(bytesSent < totalBytes) {
+        code = sendto(this->socketDescriptor, toSend.data(), toSend.size(),
+                      0, (struct sockaddr*)&externalSocketAddress, sizeof(struct sockaddr));
         if(code == -1)
-            throw SocketException("Could not send data, abort");
+            throw SocketException("Could not send data");
         bytesSent += code;
         toSend.erase(toSend.begin(), toSend.begin() + bytesSent);
     }
 }
 
-Socket::ReceiveStatus Socket::listen(unsigned long &ipAddress, unsigned short &port, std::vector<char> &data, const int size, const int timeout) const {
+std::optional<Packet> Socket::receive(const int timeout) const {
+    auto pollOutput = this->poll(timeout);
+    if(!pollOutput)
+        return std::nullopt;
+
+    auto externalSocketAddress = pollOutput->second;
+    if(externalSocketAddress.sin_addr.s_addr != this->socketAddress.getNetworkExternalIp() ||
+    externalSocketAddress.sin_port != this->socketAddress.getNetworkExternalPort()) {
+        throw SocketException("Received a packet from another client than the connected one");
+    }
+    return pollOutput->first;
+}
+
+std::optional<Packet> Socket::listen(int timeout) {
+    auto pollOutput = this->poll(timeout);
+    if(!pollOutput)
+        return std::nullopt;
+
+    auto externalSocketAddress = pollOutput->second;
+    this->socketAddress.setNetworkExternalIp(externalSocketAddress.sin_addr.s_addr);
+    this->socketAddress.setNetworkExternalPort(externalSocketAddress.sin_port);
+
+    return pollOutput->first;
+}
+
+std::optional<std::pair<Packet, struct sockaddr_in>> Socket::poll(int timeout) const {
     struct pollfd fds{};
     fds.events = POLLIN;
     fds.fd = this->socketDescriptor;
 
-    int code;
+    int code; // return codes
 
     code = ::poll(&fds, POLLIN, timeout);
 
     if(code == -1)
-        throw SocketException("Could not listen to data");
+        throw SocketException("Could not receive to data");
 
-    if(code == 0) {
-        return ReceiveStatus::EXPIRED;
-    }
+    if (code == 0)
+        return std::nullopt;
 
     if(fds.revents & POLLIN) {
         // we received some data!
-        char *buffer = new char[size];
-        for(int i = 0; i < size; i++)
+        char *buffer = new char[RECEIVE_BUFFER_SIZE];
+        for(int i = 0; i < RECEIVE_BUFFER_SIZE; i++)
             buffer[i] = 0;
         struct sockaddr_in externalSocketAddress{};
         socklen_t addressLength;
-        code = recvfrom(this->socketDescriptor, buffer, size, 0, (struct sockaddr*)&externalSocketAddress, &addressLength);
+        code = ::recvfrom(this->socketDescriptor, buffer, RECEIVE_BUFFER_SIZE, 0,
+                        (struct sockaddr*)&externalSocketAddress, &addressLength);
+        // code contains number of bytes that have been received
         if(code <= 0)
             throw SocketException("Could not receive the data");
 
-        // fill ip and port fields
-        ipAddress = externalSocketAddress.sin_addr.s_addr;
-        port = externalSocketAddress.sin_port;
-
-        // clean the vector, then copy all the data from the array to it
-        data.clear();
-        data.insert(data.end(), &buffer[0], &buffer[size]);
-
+        // transform chars into byte data, delete the buffer
+        ByteData data(buffer, RECEIVE_BUFFER_SIZE);
         delete[] buffer;
-        return Socket::ReceiveStatus::RECEIVED;
+
+        // todo: make packet reassembly from multiple UDP packets
+        return std::make_pair(Packet(data), externalSocketAddress);
     }
 
-    std::cout << (fds.revents & POLLIN) << std::endl;
     if(fds.revents & POLLERR) {
-        throw SocketException("An error occured during polling: Error condition");
+        throw SocketException("An error occurred during polling: Error condition");
     } else if(fds.revents & POLLHUP) {
-        throw SocketException("An error occured during polling: Hung up");
+        throw SocketException("An error occurred during polling: Hung up");
     } else {
-        throw SocketException("An error occured during polling: Invalid polling request");
+        // POLLNVAL
+        throw SocketException("An error occurred during polling: Invalid polling request");
     }
-
 }
 
 Socket::~Socket() {

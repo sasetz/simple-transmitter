@@ -14,6 +14,7 @@ public:
     explicit ByteData(unsigned long number);
     explicit ByteData(unsigned short number);
     explicit ByteData(bool value);
+    explicit ByteData(char *buffer, size_t length);
     // copy constructor
     ByteData(ByteData const &other);
 

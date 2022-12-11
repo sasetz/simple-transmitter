@@ -1,5 +1,6 @@
 #include "packet.hpp"
 #include "zlib.h"
+#include <iomanip>
 
 Packet::Packet(unsigned long seqNumber) : sequenceNumber(seqNumber) {}
 
@@ -55,7 +56,6 @@ ByteData Packet::build() {
     std::byte flags{0};
 
     flags = (flags << 1) | (std::byte)opn;
-    flags = (flags << 1) | (std::byte)opn;
     flags = (flags << 1) | (std::byte)rst;
     flags = (flags << 1) | (std::byte)ack;
     flags = (flags << 1) | (std::byte)nak;
@@ -89,19 +89,19 @@ Packet::Packet(ByteData bytePacket) {
     auto flags = bytePacket[12];
     this->frg = (flags & std::byte{1}) == std::byte{1};
     flags >>= 1;
-    this->rst = (flags & std::byte{1}) == std::byte{1};
-    flags >>= 1;
-    this->ack = (flags & std::byte{1}) == std::byte{1};
-    flags >>= 1;
-    this->nak = (flags & std::byte{1}) == std::byte{1};
-    flags >>= 1;
-    this->liv = (flags & std::byte{1}) == std::byte{1};
+    this->txt = (flags & std::byte{1}) == std::byte{1};
     flags >>= 1;
     this->fil = (flags & std::byte{1}) == std::byte{1};
     flags >>= 1;
-    this->txt = (flags & std::byte{1}) == std::byte{1};
+    this->liv = (flags & std::byte{1}) == std::byte{1};
     flags >>= 1;
-    this->frg = (flags & std::byte{1}) == std::byte{1};
+    this->nak = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->ack = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->rst = (flags & std::byte{1}) == std::byte{1};
+    flags >>= 1;
+    this->opn = (flags & std::byte{1}) == std::byte{1};
     flags >>= 1;
 
     this->length = ByteData::bytesToShort(bytePacket.slice(16, 18).getData());
@@ -120,4 +120,55 @@ unsigned long Packet::generateChecksum(ByteData data) {
         crc = crc32(crc, reinterpret_cast<const Bytef *>(&(data.getData()[i])), 1);
     }
     return crc;
+}
+
+std::string Packet::dump() {
+    std::string output;
+    output.append("Sequence number: ");
+    output.append(std::to_string(this->sequenceNumber));
+    output.append("\nAck number: ");
+    output.append(std::to_string(this->acknowledgementNumber));
+    output.append("\nChecksum: ");
+    output.append(std::to_string(this->checksum));
+    output.append("\nFlags: ");
+
+    if(this->opn)
+        output.append("OPN ");
+    if(this->rst)
+        output.append("RST ");
+    if(this->ack)
+        output.append("ACK ");
+    if(this->nak)
+        output.append("NAK ");
+    if(this->liv)
+        output.append("LIV ");
+    if(this->fil)
+        output.append("FIL ");
+    if(this->txt)
+        output.append("TXT ");
+    if(this->frg)
+        output.append("FRG ");
+
+    output.append("\nLength: ");
+    output.append(std::to_string(this->length));
+    output.append("\n[Actual data block length]: ");
+    output.append(std::to_string(this->data.size()));
+    output.append("\nFragment length: ");
+    output.append(std::to_string(this->fragLength));
+
+    output.append("\nData block:");
+
+    for(int i = 0; i < this->data.size(); i++) {
+        if(i % 16 == 0)
+            output.append("\n");
+        output.append(toHex(this->data[i]) + " ");
+    }
+
+    return output;
+}
+
+std::string Packet::toHex(std::byte number) {
+    std::stringstream stream;
+    stream << std::setfill('0') << std::setw(2) << std::hex << static_cast<unsigned char>(number);
+    return stream.str();
 }

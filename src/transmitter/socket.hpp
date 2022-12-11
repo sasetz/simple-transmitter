@@ -8,40 +8,42 @@
 #include <utility>
 #include <vector>
 #include <sys/socket.h>
+#include <optional>
+#include "socketAddress.hpp"
+#include "packet.hpp"
 
 class Socket {
 public:
-    enum ReceiveStatus {
-        RECEIVED, // if the message is received
-        EXPIRED, // if the timer has expired
-    };
     struct SocketException : public std::exception {
         std::string message;
+
         explicit SocketException(std::string message) {
             this->message = std::move(message);
         }
-        [[nodiscard]] const char * what() const noexcept override {
+
+        [[nodiscard]] const char *what() const noexcept override {
             return this->message.data();
         }
     };
-    Socket() noexcept(false);
-    explicit Socket(unsigned short port) noexcept(false);
-    Socket(unsigned long ipAddress, unsigned short port) noexcept(false); // initialize a socket file
+
+    explicit Socket(SocketAddress address);
+
     // accepts ipAddress, port and vector of data. All in network form
-    void send(unsigned long ipAddress, unsigned short port, const std::vector<char>& data) const;
-    // overrides the ipAddress, port and data with its own values. All in network form
-    ReceiveStatus listen(unsigned long &ipAddress, unsigned short &port, std::vector<char> &data, int size, int timeout) const;
+    void send(Packet packet) const;
+
+    // receive for a packet with an established client
+    [[nodiscard]] std::optional<Packet> receive(int timeout) const;
+
+    std::optional<Packet> listen(int timeout);
 
     ~Socket(); // close the socket file
 
 private:
-    // in host format
-    unsigned long ipAddress{};
-    unsigned short port{};
+    SocketAddress socketAddress;
     struct sockaddr_in internalSocketAddress{};
-    struct sockaddr_in externalSocketAddress{};
-    int socketDescriptor{}; // it's not just a number, it's a descriptor!!!!!!!
-    void initialize(unsigned long ipAddress, unsigned short port);
+    int socketDescriptor = 0; // it's not just a number, it's a descriptor
+    void initialize();
+    [[nodiscard]] std::optional<std::pair<Packet, struct sockaddr_in>> poll(int timeout) const;
 };
 
 

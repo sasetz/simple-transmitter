@@ -1,94 +1,46 @@
-#include <arpa/inet.h>
-#include <bits/getopt_core.h>
-#include <cstdlib>
-#include <ios>
 #include <iostream>
-#include <memory>
-#include <iomanip>
 #include <getopt.h> // getting the arguments from cli
-#include <ostream>
 #include "socket.hpp"
-// #include "transmitter.hpp"
+#include "packetBuilder.hpp"
 
 #define TIMEOUT 30
+#define PORT 27565
 
-int main(int argc, char* argv[]) {
-    unsigned long externalIp;
-    unsigned short internalPort, externalPort;
+int main(int argc, char *argv[]) {
     int opt;
-    bool isReceiver = false, hasInternals = false, hasExternals = false;
+    bool isReceiver = false;
 
-    while((opt = getopt(argc, argv, "rp:o:e:")) != -1) {
-        switch (opt) {
-            case 'p':
-                // internal port
-                hasInternals = true;
-                internalPort = atoi(optarg);
-                break;
-            case 'o':
-                // external IP
-                hasExternals = true;
-                externalIp = ntohl(inet_addr(optarg));
-                break;
-            case 'e':
-                // external port
-                hasExternals = true;
-                externalPort = atoi(optarg);
-                break;
-            case 'r':
-                // this is a receiver
-                isReceiver = true;
-                break;
-            default:
-                std::cout << "Unexpected option! Exiting..." << std::endl;
-                std::exit(1);
+    while ((opt = getopt(argc, argv, "r")) != -1) {
+        if (opt == 'r')
+            isReceiver = true;
+        else {
+            std::cout << "Unexpected option! Exiting..." << std::endl;
+            std::exit(1);
         }
     }
 
-    std::unique_ptr<Socket> socket(hasInternals ? new Socket(internalPort) : new Socket());
-    if(isReceiver) {
-        std::cout << "Init complete. Listening for " << TIMEOUT << " seconds" << std::endl;
+    if (isReceiver) {
+        // client
+        Socket socket((SocketAddress(PORT))); // initialize the socket with empty address,
+                                                              // since we don't know our host, yet
+        std::cout << "Listening for packets...\n";
+        std::optional<Packet> packet = socket.listen(TIMEOUT * 1000);
 
-        unsigned long receivedIp;
-        unsigned short receivedPort;
-        std::vector<char> data;
-
-        Socket::ReceiveStatus status;
-        do{
-            status = socket->listen(receivedIp, receivedPort, data, 512, TIMEOUT * 1000);
-            if(status != Socket::RECEIVED)
-                break;
-            std::cout << "Received packet:\n";
-            int count = 0;
-            for(auto i = data.begin(); i != data.end(); i++, count++){
-                if(count == 16) {
-                    std::cout << std::endl;
-                    count = 0;
-                }
-                count++;
-                std::cout << std::setw(2) << std::setfill('0') << std::hex << (int) *i << " ";
-            } 
-
-            std::cout << std::endl << "Interpreted as characters:" << std::endl;
-            for(char & i : data) {
-                std::cout << i;
-            }
-        } while(true);
-    } else {
-        if(!hasExternals) {
-            std::cerr << "To send, please, enter external IP and port\n";
-            std::exit(1);
+        while(packet) {
+            std::cout << "\nReceived a packet:" << std::endl;
+            std::cout << packet.value().dump() << std::endl;
+            packet = socket.listen(TIMEOUT * 1000);
         }
-        std::cout << "Init complete. ";
-        std::string inputData;
-        while(true) {
-            std::cout << "Input data to send:" << std::endl;
-            std::cin >> inputData;
-            if(inputData == "exit")
-                break;
-            inputData.push_back('\n');
-            std::cout << "Sending your data..." << std::endl;
-            socket->send(externalIp, externalPort, std::vector<char>(inputData.begin(), inputData.end()));
+
+        std::cout << "No packet received, exiting\n";
+        std::exit(0);
+    } else {
+        // server
+        Socket socket((SocketAddress(0x7f'00'00'01UL, PORT))); // don't care what address or port is assigned
+        PacketBuilder builder;
+        for (int i = 0; i < 10; ++i) {
+            std::cout << "Sending packet " << i << "...\n";
+            socket.send(builder.getKeepAlive());
         }
     }
     return 0;

@@ -129,3 +129,10 @@ ByteData ByteData::slice(int from, int to) {
 ByteData ByteData::slice(int from) {
     return ByteData(std::vector<std::byte>(this->data.begin() + from, this->data.end()));
 }
+
+ByteData::ByteData(char *buffer, size_t length) {
+    this->data.reserve(length);
+    for(size_t i = 0; i < length; i++) {
+        this->data.push_back((std::byte)buffer[i]);
+    }
+}

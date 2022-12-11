@@ -14,9 +14,26 @@ private:
     unsigned short externalPort;
     unsigned short internalPort;
 public:
-    SocketAddress(unsigned long internalIp, unsigned short internalPort, unsigned long externalIp, unsigned short externalPort);
+    SocketAddress(unsigned long internalIp, unsigned short internalPort,
+                  unsigned long externalIp, unsigned short externalPort);
+    SocketAddress(unsigned long externalIp, unsigned short externalPort);
+    SocketAddress();
+    SocketAddress(unsigned short port);
 
     SocketAddress(const std::string& internal, const std::string& external);
+
+    unsigned long getNetworkExternalIp() const;
+    unsigned long getNetworkInternalIp() const;
+    unsigned short getNetworkExternalPort() const;
+    unsigned short getNetworkInternalPort() const;
+
+    unsigned long getHostExternalIp() const;
+    unsigned long getHostInternalIp() const;
+    unsigned short getHostExternalPort() const;
+    unsigned short getHostInternalPort() const;
+
+    void setNetworkExternalIp(unsigned long ip);
+    void setNetworkExternalPort(unsigned short port);
 };
 
 #endif
