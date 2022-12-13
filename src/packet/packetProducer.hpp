@@ -1,5 +1,5 @@
-#ifndef SIMPLE_TRANSMITTER_DATA_HPP
-#define SIMPLE_TRANSMITTER_DATA_HPP
+#ifndef SIMPLE_TRANSMITTER_PACKETPRODUCER_HPP
+#define SIMPLE_TRANSMITTER_PACKETPRODUCER_HPP
 
 
 #include <optional>
@@ -8,7 +8,7 @@
 #include "packetBuilder.hpp"
 
 // class that represents data that needs to be sent to the other host
-class Data {
+class PacketProducer {
 protected:
     static std::optional<ByteData> getBytes(std::ifstream &stream, unsigned short fragmentLength){
         std::vector<std::byte> bytes (fragmentLength);
@@ -28,4 +28,4 @@ public:
     nextPacket(PacketBuilder &builder, bool isHotConnection) = 0;
 };
 
-#endif //SIMPLE_TRANSMITTER_DATA_HPP
+#endif //SIMPLE_TRANSMITTER_PACKETPRODUCER_HPP

@@ -1,12 +1,12 @@
-#include "fileData.hpp"
+#include "filePacketProducer.hpp"
 #include "packetBuilder.hpp"
 
-FileData::FileData(const std::string &path) {
+FilePacketProducer::FilePacketProducer(const std::string &path) {
     this->filePath = path;
 }
 
 std::optional<Packet>
-FileData::nextPacket(PacketBuilder &builder, bool isHotConnection) {
+FilePacketProducer::nextPacket(PacketBuilder &builder, bool isHotConnection) {
     if (!this->fileStream.is_open()) {
         // try to open the file in binary input mode
         this->fileStream.open(this->filePath, std::ios::in | std::ios::binary);
@@ -21,7 +21,7 @@ FileData::nextPacket(PacketBuilder &builder, bool isHotConnection) {
         }
     }
     // the file is open and ok, construct the bytes
-    auto bytes = Data::getBytes(this->fileStream, builder.getFragmentLength());
+    auto bytes = PacketProducer::getBytes(this->fileStream, builder.getFragmentLength());
 
     if (!bytes) {
         if(!this->hasClosingPacket)

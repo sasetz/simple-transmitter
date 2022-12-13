@@ -16,7 +16,7 @@ add_library(packet STATIC
         packet/packet.hpp
         packet/packet.cpp
         packet/packetBuilder.hpp
-        packet/packetBuilder.cpp packet/data.hpp packet/fileData.cpp packet/fileData.hpp packet/textData.cpp packet/textData.hpp)
+        packet/packetBuilder.cpp packet/packetProducer.hpp packet/filePacketProducer.cpp packet/filePacketProducer.hpp packet/textPacketProducer.cpp packet/textPacketProducer.hpp)
 target_include_directories(packet
         PUBLIC packet)
 target_link_libraries(packet input ZLIB::ZLIB)

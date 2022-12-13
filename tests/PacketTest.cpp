@@ -3,8 +3,8 @@
 #include "doctest.h"
 #include "byteData.hpp"
 #include "packetBuilder.hpp"
-#include "fileData.hpp"
-#include "textData.hpp"
+#include "filePacketProducer.hpp"
+#include "textPacketProducer.hpp"
 
 TEST_SUITE_BEGIN("byte data");
 TEST_CASE("long to bytes function works") {
@@ -178,7 +178,7 @@ TEST_SUITE_END();
 TEST_SUITE_BEGIN("data transferring to packets");
 
 TEST_CASE("file data to packets works") {
-    FileData data("../test.txt");
+    FilePacketProducer data("../test.txt");
     PacketBuilder builder;
     builder.setFragmentLength(8);
 
@@ -199,7 +199,7 @@ TEST_CASE("file data to packets works") {
 }
 
 TEST_CASE("text data to packets works") {
-    TextData data("Testing text transmission\n", false);
+    TextPacketProducer data("Testing text transmission\n", false);
     PacketBuilder builder;
     builder.setFragmentLength(8);
 

@@ -1,11 +1,11 @@
-#include "textData.hpp"
+#include "textPacketProducer.hpp"
 
-TextData::TextData(const std::string &text, bool isHotFragment) {
+TextPacketProducer::TextPacketProducer(const std::string &text, bool isHotFragment) {
     this->remainingText = text;
     this->isHotFragment = isHotFragment;
 }
 
-std::optional<Packet> TextData::nextPacket(PacketBuilder &builder, bool isHotConnection) {
+std::optional<Packet> TextPacketProducer::nextPacket(PacketBuilder &builder, bool isHotConnection) {
     // if all text has been sent, return nothing
     if (this->remainingText.empty()) {
         if (this->hasClosingPacket) {

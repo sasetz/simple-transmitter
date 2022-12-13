@@ -1,12 +1,12 @@
-#ifndef SIMPLE_TRANSMITTER_FILEDATA_HPP
-#define SIMPLE_TRANSMITTER_FILEDATA_HPP
+#ifndef SIMPLE_TRANSMITTER_FILEPACKETPRODUCER_HPP
+#define SIMPLE_TRANSMITTER_FILEPACKETPRODUCER_HPP
 
 
 #include <fstream>
-#include "data.hpp"
+#include "packetProducer.hpp"
 #include "packetBuilder.hpp"
 
-class FileData : public Data {
+class FilePacketProducer : public PacketProducer {
 private:
     std::string filePath;
     std::ifstream fileStream;
@@ -14,7 +14,7 @@ private:
     // this packet needs to be sent if end-of-file was reached and last fragment had full length
     bool hasClosingPacket = false;
 public:
-    FileData(const std::string &path);
+    FilePacketProducer(const std::string &path);
 
     std::optional<Packet>
     nextPacket(PacketBuilder &builder, bool isHotConnection) override;
@@ -35,4 +35,4 @@ public:
 };
 
 
-#endif //SIMPLE_TRANSMITTER_FILEDATA_HPP
+#endif //SIMPLE_TRANSMITTER_FILEPACKETPRODUCER_HPP
