@@ -2,6 +2,7 @@
 #include <getopt.h> // getting the arguments from cli
 #include "socket.hpp"
 #include "packetBuilder.hpp"
+#include "packetController.hpp"
 
 #define TIMEOUT 30
 #define PORT 27565
@@ -22,26 +23,20 @@ int main(int argc, char *argv[]) {
     if (isReceiver) {
         // client
         Socket socket((SocketAddress(PORT))); // initialize the socket with empty address,
-                                                              // since we don't know our host, yet
-        std::cout << "Listening for packets...\n";
-        std::optional<Packet> packet = socket.listen(TIMEOUT * 1000);
+        // since we don't know our host, yet
+        std::cout << "Listening for connections...\n";
 
-        while(packet) {
-            std::cout << "\nReceived a packet:" << std::endl;
-            std::cout << packet.value().dump() << std::endl;
-            packet = socket.listen(TIMEOUT * 1000);
-        }
+        PacketController controller(socket, false);
+        controller.run();
 
         std::cout << "No packet received, exiting\n";
-        std::exit(0);
     } else {
         // server
         Socket socket((SocketAddress(0x7f'00'00'01UL, PORT))); // don't care what address or port is assigned
-        PacketBuilder builder;
-        for (int i = 0; i < 10; ++i) {
-            std::cout << "Sending packet " << i << "...\n";
-            socket.send(builder.getKeepAlive());
-        }
+        std::cout << "Starting server...\n";
+
+        PacketController controller(socket, true);
+        controller.run();
     }
     return 0;
 }

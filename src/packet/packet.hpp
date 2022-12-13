@@ -49,6 +49,21 @@ public:
 
     void setFragment(const ByteData& dataBlock, unsigned short fragmentLength);
 
+    [[nodiscard]] bool isOpen() const;
+    [[nodiscard]] bool isClose() const;
+    [[nodiscard]] bool isAck() const;
+    [[nodiscard]] bool isNak() const;
+    [[nodiscard]] bool isKeepAlive() const;
+    [[nodiscard]] bool isFile() const;
+    [[nodiscard]] bool isText() const;
+    [[nodiscard]] bool isFragment() const;
+
+    bool validate();
+
+    [[nodiscard]] unsigned long getSequenceNumber() const;
+    [[nodiscard]] unsigned long getAckNumber() const;
+    [[nodiscard]] unsigned short getLength() const;
+
     // checks if the packet is valid and assembles it to bytes
     ByteData build();
     static unsigned long generateChecksum(ByteData data);

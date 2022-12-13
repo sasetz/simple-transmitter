@@ -172,3 +172,51 @@ std::string Packet::toHex(std::byte number) {
     stream << std::setfill('0') << std::setw(2) << std::hex << static_cast<unsigned char>(number);
     return stream.str();
 }
+
+bool Packet::isOpen() const {
+    return this->opn;
+}
+
+bool Packet::isClose() const {
+    return this->rst;
+}
+
+bool Packet::isAck() const {
+    return this->ack;
+}
+
+bool Packet::isNak() const {
+    return this->nak;
+}
+
+bool Packet::isKeepAlive() const {
+    return this->liv;
+}
+
+bool Packet::isFile() const {
+    return this->fil;
+}
+
+bool Packet::isText() const {
+    return this->txt;
+}
+
+bool Packet::isFragment() const {
+    return this->frg;
+}
+
+unsigned long Packet::getSequenceNumber() const {
+    return this->sequenceNumber;
+}
+
+unsigned long Packet::getAckNumber() const {
+    return this->acknowledgementNumber;
+}
+
+bool Packet::validate() {
+    return this->data.size() == 0 || this->generateChecksum(this->data) == this->checksum;
+}
+
+unsigned short Packet::getLength() const {
+    return this->length;
+}

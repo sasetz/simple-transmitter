@@ -1,9 +1,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshadow"
 #include "socket.hpp"
-#include <iostream>
 #include <netinet/in.h>
-#include <ostream>
 #include <string>
 #include <sys/socket.h>
 #include <sys/poll.h>
@@ -48,7 +46,7 @@ void Socket::send(Packet packet) const {
     int bytesSent = 0;
     int code; // variable for output codes
     ByteData rawPacket = packet.build();
-    auto totalBytes = rawPacket.size(); // size of the packet that needs to be sent
+    auto totalBytes = rawPacket.size(); // size of the packet that needs to be sentPackets
     std::vector<std::byte> toSend = std::move(rawPacket.getData());
 
     struct sockaddr_in externalSocketAddress{};
@@ -98,7 +96,7 @@ std::optional<std::pair<Packet, struct sockaddr_in>> Socket::poll(int timeout) c
     fds.events = POLLIN;
     fds.fd = this->socketDescriptor;
 
-    int code; // return codes
+    ssize_t code; // return codes
 
     code = ::poll(&fds, POLLIN, timeout);
 
@@ -114,7 +112,7 @@ std::optional<std::pair<Packet, struct sockaddr_in>> Socket::poll(int timeout) c
         for(int i = 0; i < RECEIVE_BUFFER_SIZE; i++)
             buffer[i] = 0;
         struct sockaddr_in externalSocketAddress{};
-        socklen_t addressLength;
+        socklen_t addressLength = sizeof(externalSocketAddress);
         code = ::recvfrom(this->socketDescriptor, buffer, RECEIVE_BUFFER_SIZE, 0,
                         (struct sockaddr*)&externalSocketAddress, &addressLength);
         // code contains number of bytes that have been received

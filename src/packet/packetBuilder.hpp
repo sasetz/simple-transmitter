@@ -13,26 +13,27 @@ private:
 public:
     PacketBuilder();
     void setFragmentLength(unsigned short fragLength);
+    [[nodiscard]] unsigned short getFragmentLength() const;
 
     Packet getStart();
-    Packet getHotFileStart(std::string& name);
+    Packet getHotFileStart(const std::string &name);
     Packet getHotTextStart();
-    Packet getHotTextFragmentStart(std::string textBlock);
+    Packet getHotTextFragmentStart(const std::string &textBlock);
 
-    Packet getFileStart(std::string name);
+    Packet getFileStart(const std::string &name);
     Packet getTextStart();
-    Packet getTextFragmentStart(std::string textBlock);
+    Packet getTextFragmentStart(const std::string &textBlock);
 
     Packet getAcknowledgement(unsigned long acknowledgeNumber);
     Packet getNak(unsigned long nakNumber);
 
     Packet getKeepAlive();
 
-    Packet getFragment(ByteData dataBlock);
-    Packet getTextFragment(std::string textBlock);
+    Packet getFragment(const ByteData &dataBlock);
+    Packet getTextFragment(const std::string &textBlock);
 
-    Packet getFragmentStop(ByteData dataBlock);
-    Packet getTextFragmentStop(std::string textBlock);
+    Packet getFragmentStop(const ByteData &dataBlock);
+    Packet getTextFragmentStop(const std::string &textBlock);
     Packet getStop();
 };
 

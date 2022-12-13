@@ -3,6 +3,8 @@
 #include "doctest.h"
 #include "byteData.hpp"
 #include "packetBuilder.hpp"
+#include "fileData.hpp"
+#include "textData.hpp"
 
 TEST_SUITE_BEGIN("byte data");
 TEST_CASE("long to bytes function works") {
@@ -169,6 +171,52 @@ TEST_CASE("checksum calculation works") {
     ByteData data(0xBB'69'5F'C8UL);
     unsigned long output = Packet::generateChecksum(data);
     CHECK_EQ(output, 78507313UL);
+}
+
+TEST_SUITE_END();
+
+TEST_SUITE_BEGIN("data transferring to packets");
+
+TEST_CASE("file data to packets works") {
+    FileData data("../test.txt");
+    PacketBuilder builder;
+    builder.setFragmentLength(8);
+
+    std::optional<Packet> anOptional = data.nextPacket(builder, false);
+    CHECK(anOptional->isFile());
+    anOptional = data.nextPacket(builder, false);
+    int counter = 0;
+    while(anOptional) {
+        CHECK(anOptional->isFragment());
+        if(counter == 3) {
+            CHECK_EQ(anOptional->getLength(), 2);
+        } else {
+            CHECK_EQ(anOptional->getLength(), 8);
+        }
+        counter++;
+        anOptional = data.nextPacket(builder, false);
+    }
+}
+
+TEST_CASE("text data to packets works") {
+    TextData data("Testing text transmission\n", false);
+    PacketBuilder builder;
+    builder.setFragmentLength(8);
+
+    std::optional<Packet> anOptional = data.nextPacket(builder, false);
+    CHECK(anOptional->isText());
+    anOptional = data.nextPacket(builder, false);
+    int counter = 0;
+    while(anOptional) {
+        CHECK(anOptional->isFragment());
+        if(counter == 3) {
+            CHECK_EQ(anOptional->getLength(), 2);
+        } else {
+            CHECK_EQ(anOptional->getLength(), 8);
+        }
+        counter++;
+        anOptional = data.nextPacket(builder, false);
+    }
 }
 
 TEST_SUITE_END();

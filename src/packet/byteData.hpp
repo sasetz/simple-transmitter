@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <string>
 
-// this class represents byte data that will be sent over the network in the data block of the packet
+// this class represents byte data that will be sentPackets over the network in the data block of the packet
 class ByteData {
 private:
     std::vector<std::byte> data;
@@ -41,7 +41,7 @@ public:
     ByteData slice(int from, int to);
     ByteData slice(int from);
 
-    size_t size();
+    size_t size() const;
 
     // exceptions that can occur while transforming byte data
     class ByteException : public std::exception {

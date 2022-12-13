@@ -109,7 +109,7 @@ ByteData &ByteData::operator+=(unsigned short other) {
     return *this;
 }
 
-size_t ByteData::size() {
+size_t ByteData::size() const {
     return this->data.size();
 }
 
