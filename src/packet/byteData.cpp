@@ -136,3 +136,11 @@ ByteData::ByteData(char *buffer, size_t length) {
         this->data.push_back((std::byte)buffer[i]);
     }
 }
+
+std::string ByteData::toString() const {
+    std::string output;
+    for(std::byte byte : this->data) {
+        output.push_back(static_cast<char>(byte));
+    }
+    return output;
+}

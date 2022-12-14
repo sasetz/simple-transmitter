@@ -14,6 +14,9 @@ public:
     PacketBuilder();
     void setFragmentLength(unsigned short fragLength);
     [[nodiscard]] unsigned short getFragmentLength() const;
+    unsigned long getSequenceNumber() {
+        return this->sequenceNumber;
+    };
 
     Packet getStart();
     Packet getHotFileStart(const std::string &name);

@@ -21,9 +21,10 @@ void PacketBuilder::setFragmentLength(unsigned short fragLength) {
 }
 
 Packet PacketBuilder::getHotFileStart(const std::string &name) {
+    Packet temp(this->sequenceNumber);
     // add the data block size to the sequence number to indicate how much we've sentPackets
     this->sequenceNumber += name.size();
-    Packet temp(this->sequenceNumber);
+    this->sequenceNumber++;
     temp.setOpen();
     temp.setFile(name);
     return temp;
@@ -31,6 +32,7 @@ Packet PacketBuilder::getHotFileStart(const std::string &name) {
 
 Packet PacketBuilder::getHotTextStart() {
     Packet temp(this->sequenceNumber);
+    this->sequenceNumber++;
     temp.setOpen();
     temp.setText();
     return temp;
@@ -43,20 +45,23 @@ Packet PacketBuilder::getHotTextFragmentStart(const std::string &textBlock) {
     temp.setText();
     ByteData data(textBlock);
     this->sequenceNumber += data.size();
+    this->sequenceNumber++;
     temp.setFragment(data, this->fragmentLength);
     return temp;
 }
 
 Packet PacketBuilder::getFileStart(const std::string &name) {
     // add the data block size to the sequence number to indicate how much we've sentPackets
-    this->sequenceNumber += name.size();
     Packet temp(this->sequenceNumber);
+    this->sequenceNumber += name.size();
+    this->sequenceNumber++;
     temp.setFile(name);
     return temp;
 }
 
 Packet PacketBuilder::getTextStart() {
     Packet temp(this->sequenceNumber);
+    this->sequenceNumber++;
     temp.setText();
     return temp;
 }
@@ -67,6 +72,7 @@ Packet PacketBuilder::getTextFragmentStart(const std::string &textBlock) {
     temp.setText();
     ByteData data(textBlock);
     this->sequenceNumber += data.size();
+    this->sequenceNumber++;
     temp.setFragment(data, this->fragmentLength);
     return temp;
 }
@@ -92,6 +98,8 @@ Packet PacketBuilder::getKeepAlive() {
 
 Packet PacketBuilder::getFragment(const ByteData &dataBlock) {
     Packet temp(this->sequenceNumber);
+    this->sequenceNumber += dataBlock.size();
+    this->sequenceNumber++;
     temp.setFragment(dataBlock, this->fragmentLength);
     return temp;
 }
@@ -100,6 +108,7 @@ Packet PacketBuilder::getTextFragment(const std::string &textBlock) {
     Packet temp(this->sequenceNumber);
     ByteData data(textBlock);
     this->sequenceNumber += data.size();
+    this->sequenceNumber++;
     temp.setFragment(data, this->fragmentLength);
     return temp;
 }
@@ -108,6 +117,7 @@ Packet PacketBuilder::getFragmentStop(const ByteData &dataBlock) {
     Packet temp(this->sequenceNumber);
     temp.setClose();
     this->sequenceNumber += dataBlock.size();
+    this->sequenceNumber++;
     temp.setFragment(dataBlock, this->fragmentLength);
     return temp;
 }
@@ -116,6 +126,7 @@ Packet PacketBuilder::getTextFragmentStop(const std::string &textBlock) {
     Packet temp(this->sequenceNumber);
     ByteData data(textBlock);
     this->sequenceNumber += data.size();
+    this->sequenceNumber++;
     temp.setFragment(data, this->fragmentLength);
     temp.setClose();
     return temp;

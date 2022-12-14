@@ -24,6 +24,8 @@ public:
     // copy string characters into the data block
     explicit ByteData(const std::string& string);
 
+    [[nodiscard]] std::string toString() const;
+
     std::vector<std::byte> getData();
 
     // converts host unsigned long into network unsigned long vector of bytes

@@ -6,10 +6,10 @@ FilePacketProducer::FilePacketProducer(const std::string &path) {
 }
 
 std::optional<Packet>
-FilePacketProducer::nextPacket(PacketBuilder &builder, bool isHotConnection) {
+FilePacketProducer::producePacket(PacketBuilder &builder, bool isHotConnection, bool isHotClose) {
     if (!this->fileStream.is_open()) {
         // try to open the file in binary input mode
-        this->fileStream.open(this->filePath, std::ios::in | std::ios::binary);
+        this->fileStream.open(this->filePath, std::ifstream::in | std::ifstream::binary);
         if (!this->fileStream.is_open())
             throw FileDataException("Failed to open the file");
 
@@ -21,15 +21,27 @@ FilePacketProducer::nextPacket(PacketBuilder &builder, bool isHotConnection) {
         }
     }
     // the file is open and ok, construct the bytes
-    auto bytes = PacketProducer::getBytes(this->fileStream, builder.getFragmentLength());
+    auto bytes = getBytes(this->fileStream, builder.getFragmentLength());
 
     if (!bytes) {
-        if(!this->hasClosingPacket)
+        if (!this->hasClosingPacket)
             return std::nullopt;
         this->hasClosingPacket = false;
-        // if the function is called again, but there are no
-        return builder.getFragment(ByteData());
+
+        if (isHotClose)
+            return builder.getFragmentStop(ByteData());
+        else
+            return builder.getFragment(ByteData());
     }
     this->hasClosingPacket = this->fileStream.eof() && bytes->size() == builder.getFragmentLength();
-    return builder.getFragment(bytes.value());
+
+    if (bytes->size() < builder.getFragmentLength())
+        return builder.getFragmentStop(bytes.value());
+    else
+        return builder.getFragment(bytes.value());
+}
+
+FilePacketProducer::~FilePacketProducer() {
+    if (this->fileStream.is_open())
+        this->fileStream.close();
 }

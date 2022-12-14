@@ -14,11 +14,14 @@ private:
     unsigned short externalPort;
     unsigned short internalPort;
 public:
+    static SocketAddress getServerAddress(unsigned short port);
+    static SocketAddress getClientAddress(unsigned long externalIp, unsigned short externalPort);
+
     SocketAddress(unsigned long internalIp, unsigned short internalPort,
                   unsigned long externalIp, unsigned short externalPort);
     SocketAddress(unsigned long externalIp, unsigned short externalPort);
     SocketAddress();
-    SocketAddress(unsigned short port);
+    explicit SocketAddress(unsigned short port);
 
     SocketAddress(const std::string& internal, const std::string& external);
 

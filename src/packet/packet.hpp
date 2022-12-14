@@ -63,6 +63,8 @@ public:
     [[nodiscard]] unsigned long getSequenceNumber() const;
     [[nodiscard]] unsigned long getAckNumber() const;
     [[nodiscard]] unsigned short getLength() const;
+    [[nodiscard]] unsigned short getFragmentLength() const;
+    [[nodiscard]] ByteData getData() const;
 
     // checks if the packet is valid and assembles it to bytes
     ByteData build();

@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <optional>
 
+using namespace std::chrono_literals;
 
 Socket::Socket(SocketAddress address): socketAddress(address) {
     this->initialize();
@@ -66,8 +67,8 @@ void Socket::send(Packet packet) const {
     }
 }
 
-std::optional<Packet> Socket::receive(const int timeout) const {
-    auto pollOutput = this->poll(timeout);
+std::optional<Packet> Socket::receive(const std::chrono::duration<int, std::milli> &timeout) const {
+    auto pollOutput = this->poll(timeout.count());
     if(!pollOutput)
         return std::nullopt;
 
@@ -79,8 +80,8 @@ std::optional<Packet> Socket::receive(const int timeout) const {
     return pollOutput->first;
 }
 
-std::optional<Packet> Socket::listen(int timeout) {
-    auto pollOutput = this->poll(timeout);
+std::optional<Packet> Socket::listen(const std::chrono::duration<int, std::milli> &timeout) {
+    auto pollOutput = this->poll(timeout.count());
     if(!pollOutput)
         return std::nullopt;
 
@@ -123,7 +124,6 @@ std::optional<std::pair<Packet, struct sockaddr_in>> Socket::poll(int timeout) c
         ByteData data(buffer, RECEIVE_BUFFER_SIZE);
         delete[] buffer;
 
-        // todo: make packet reassembly from multiple UDP packets
         return std::make_pair(Packet(data), externalSocketAddress);
     }
 

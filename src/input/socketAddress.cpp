@@ -72,3 +72,11 @@ void SocketAddress::setNetworkExternalPort(unsigned short port) {
     this->externalPort = ntohs(port);
 }
 
+SocketAddress SocketAddress::getServerAddress(unsigned short port) {
+    return SocketAddress(port);
+}
+
+SocketAddress SocketAddress::getClientAddress(unsigned long externalIp, unsigned short externalPort) {
+    return {externalIp, externalPort};
+}
+

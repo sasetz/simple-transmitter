@@ -220,3 +220,11 @@ bool Packet::validate() {
 unsigned short Packet::getLength() const {
     return this->length;
 }
+
+ByteData Packet::getData() const {
+    return this->data;
+}
+
+unsigned short Packet::getFragmentLength() const {
+    return this->fragLength;
+}

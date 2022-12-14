@@ -182,9 +182,9 @@ TEST_CASE("file data to packets works") {
     PacketBuilder builder;
     builder.setFragmentLength(8);
 
-    std::optional<Packet> anOptional = data.nextPacket(builder, false);
+    std::optional<Packet> anOptional = data.producePacket(builder, false);
     CHECK(anOptional->isFile());
-    anOptional = data.nextPacket(builder, false);
+    anOptional = data.producePacket(builder, false);
     int counter = 0;
     while(anOptional) {
         CHECK(anOptional->isFragment());
@@ -194,7 +194,7 @@ TEST_CASE("file data to packets works") {
             CHECK_EQ(anOptional->getLength(), 8);
         }
         counter++;
-        anOptional = data.nextPacket(builder, false);
+        anOptional = data.producePacket(builder, false);
     }
 }
 
@@ -203,9 +203,9 @@ TEST_CASE("text data to packets works") {
     PacketBuilder builder;
     builder.setFragmentLength(8);
 
-    std::optional<Packet> anOptional = data.nextPacket(builder, false);
+    std::optional<Packet> anOptional = data.producePacket(builder, false);
     CHECK(anOptional->isText());
-    anOptional = data.nextPacket(builder, false);
+    anOptional = data.producePacket(builder, false);
     int counter = 0;
     while(anOptional) {
         CHECK(anOptional->isFragment());
@@ -215,7 +215,7 @@ TEST_CASE("text data to packets works") {
             CHECK_EQ(anOptional->getLength(), 8);
         }
         counter++;
-        anOptional = data.nextPacket(builder, false);
+        anOptional = data.producePacket(builder, false);
     }
 }
 

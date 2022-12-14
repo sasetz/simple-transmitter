@@ -6,64 +6,42 @@
 #include <thread>
 #include <mutex>
 #include <utility>
+#include <memory>
 #include "socketAddress.hpp"
-#include "dataEntity.hpp"
 #include "socket.hpp"
 #include "packetBuilder.hpp"
+#include "dataEntity.hpp"
+#include "transmissionController.hpp"
 
 class Transmitter {
 private:
-    class InputData {
-    public:
-        bool isFile;
-        std::string value;
-        InputData(std::string value, bool isFile): value(std::move(value)), isFile(isFile) {}
-    };
-
-    void transmit();
     std::thread runningThread;
-    std::atomic<bool> isRunning = false;
 
-    std::queue<InputData> input;
-    std::mutex inputMutex;
+    bool closing;
 
-    std::queue<DataEntity> output;
-    std::mutex outputMutex;
+    std::shared_ptr<std::mutex> inputMutex; // mutex for input queue
+    std::shared_ptr<std::mutex> outputMutex; // mutex for output queue
 
-    bool isHot = false;
-    bool isPassive = true;
+    std::shared_ptr<std::queue<DataEntity>> inputDataQueue; // queue that contains data to send
+    std::shared_ptr<std::queue<DataEntity>> outputDataQueue; // queue that contains data received by the transmitter
 
-    enum class State {
-        Closed,
-        Established,
-        SendingFile,
-        SendingText,
-        ReceivingFile,
-        ReceivingText
-    };
-    State currentState = State::Closed;
-    Socket socket;
+    std::unique_ptr<TransmissionController> transmissionController{};
 
-    std::vector<Packet> sentPackets;
-    unsigned long nextSequenceNumber;
-
-    void runServer();
-    void runClient();
-    void establishedState();
-    PacketBuilder builder;
-    int retryNumber;
+    bool hotConnection = false;
+    bool textFragmented = false;
+    bool hotClose = false;
+    SocketAddress socketAddress;
 public:
-    Transmitter();
     explicit Transmitter(SocketAddress address);
 
-    Transmitter &setHotConnection();
+    void run(bool activeOpen);
+
     Transmitter &addFile(const std::string& path);
     Transmitter &addText(const std::string& text);
-    Transmitter &connect();
-    Transmitter &listen();
+    Transmitter &setHotConnection();
+    Transmitter &setTextFragmented();
+    Transmitter &setHotClose();
 
-    std::optional<DataEntity> consumeInput();
-    void close();
     ~Transmitter();
 };
 

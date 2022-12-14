@@ -9,6 +9,7 @@
 #include <vector>
 #include <sys/socket.h>
 #include <optional>
+#include <chrono>
 #include "socketAddress.hpp"
 #include "packet.hpp"
 
@@ -32,15 +33,14 @@ public:
     void send(Packet packet) const;
 
     // receive for a packet with an established client
-    [[nodiscard]] std::optional<Packet> receive(int timeout) const;
+    [[nodiscard]] std::optional<Packet> receive(const std::chrono::duration<int, std::milli> &timeout) const;
 
-    std::optional<Packet> listen(int timeout);
+    std::optional<Packet> listen(const std::chrono::duration<int, std::milli> &timeout);
 
     ~Socket(); // close the socket file
 
 private:
     SocketAddress socketAddress;
-    struct sockaddr_in internalSocketAddress{};
     int socketDescriptor = 0; // it's not just a number, it's a descriptor
     void initialize();
     [[nodiscard]] std::optional<std::pair<Packet, struct sockaddr_in>> poll(int timeout) const;

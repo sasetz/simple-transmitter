@@ -4,7 +4,7 @@
 
 #include "packetProducer.hpp"
 
-class TextPacketProducer : PacketProducer{
+class TextPacketProducer : public PacketProducer{
 private:
     std::string remainingText;
     bool hasClosingPacket = false;
@@ -12,7 +12,7 @@ private:
     bool isHotFragment;
 public:
     TextPacketProducer(const std::string &text, bool isHotFragment);
-    std::optional<Packet> nextPacket(PacketBuilder &builder, bool isHotConnection) override;
+    std::optional<Packet> producePacket(PacketBuilder &builder, bool isHotConnection, bool isHotClose) override;
 };
 
 
