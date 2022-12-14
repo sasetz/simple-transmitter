@@ -1,0 +1,6 @@
+#ifndef SIMPLE_TRANSMITTER_INPUT_HPP
+#define SIMPLE_TRANSMITTER_INPUT_HPP
+
+void interactivePrompt();
+
+#endif //SIMPLE_TRANSMITTER_INPUT_HPP

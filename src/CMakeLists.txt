@@ -40,5 +40,5 @@ target_compile_definitions(transmitter
         PRIVATE MAXIMUM_FILENAME_LENGTH=${MAXIMUM_FILENAME_LENGTH}
         PRIVATE RECEIVE_BUFFER_SIZE=${RECEIVE_BUFFER_SIZE})
 
-add_executable(${PROJECT_NAME} main/main.cpp)
+add_executable(${PROJECT_NAME} main/main.cpp main/input.cpp main/input.hpp)
 target_link_libraries(${PROJECT_NAME} transmitter)

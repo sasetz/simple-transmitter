@@ -1,8 +1,12 @@
+#include <iostream>
 #include "filePacketConsumer.hpp"
 
 FilePacketConsumer::FilePacketConsumer() = default;
 
+int consumeCounter = 0;
 bool FilePacketConsumer::consumePacket(Packet packet) {
+    consumeCounter++;
+    std::cout << consumeCounter << "\n";
     if(!this->fileStream.is_open() && packet.isFile()) {
         this->filename = packet.getData().toString();
         this->fileStream.open(this->filename, std::ofstream::out | std::ofstream::binary);
@@ -36,11 +40,7 @@ bool FilePacketConsumer::consumePacket(Packet packet) {
     return !this->isFinished;
 }
 
-FilePacketConsumer::~FilePacketConsumer() {
-    if(this->fileStream.is_open())
-        this->fileStream.close();
-}
-
 DataEntity FilePacketConsumer::getResult() const {
     return {DataEntity::InputType::File, this->filename};
 }
+

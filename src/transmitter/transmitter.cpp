@@ -64,3 +64,29 @@ Transmitter::~Transmitter() {
     this->runningThread.join();
 }
 
+bool Transmitter::isClosing() const {
+    return closing;
+}
+
+void Transmitter::close() {
+    Transmitter::closing = true;
+}
+
+std::optional<std::string> Transmitter::getOutput() {
+    this->outputMutex->lock();
+    if(this->outputDataQueue->empty()) {
+        this->outputMutex->unlock();
+        return std::nullopt;
+    }
+
+    DataEntity data = this->outputDataQueue->front();
+    this->outputDataQueue->pop();
+    this->outputMutex->unlock();
+    switch(data.type) {
+        case DataEntity::InputType::File:
+            return "File on path: " + data.payload + "\n";
+        case DataEntity::InputType::Text:
+            return "Text: " + data.payload + "\n";
+    }
+}
+

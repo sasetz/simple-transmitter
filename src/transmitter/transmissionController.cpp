@@ -15,10 +15,10 @@ TransmissionController::TransmissionController(SocketAddress address,
                                                std::shared_ptr<std::mutex> inputMutex,
                                                std::shared_ptr<std::mutex> outputMutex,
                                                bool &isClosing) : socket(address), closing(isClosing) {
-    this->inputDataQueue = inputDataQueue;
-    this->outputDataQueue = outputDataQueue;
-    this->inputMutex = inputMutex;
-    this->outputMutex = outputMutex;
+    this->inputDataQueue = std::move(inputDataQueue);
+    this->outputDataQueue = std::move(outputDataQueue);
+    this->inputMutex = std::move(inputMutex);
+    this->outputMutex = std::move(outputMutex);
 }
 
 void TransmissionController::establishConnection() {
@@ -209,7 +209,7 @@ bool TransmissionController::processAcknowledgement(const Packet &packet) {
             // if we get an ack, the packet that we got will be processed
             this->sentPackets.erase(sentPacket);
             // debug
-            std::cout << "acknowledged";
+            std::cout << "acknowledged\n";
             return true;
         }
     }
@@ -243,7 +243,7 @@ void TransmissionController::resend(const Packet &packet) {
     this->socket.send(packet);
 }
 
-void TransmissionController::consumeDataPacket(Packet packet) {
+void TransmissionController::consumeDataPacket(const Packet& packet) {
     if (packet.isFile()) {
         // we got a packet that begins transmitting a file
         this->consumer = std::make_unique<FilePacketConsumer>();
@@ -261,13 +261,14 @@ void TransmissionController::consumeDataPacket(Packet packet) {
     if (packet.isFragment() || packet.isFile()) {
         // we got a packet that carries some data
 
+        std::cout << "fragment received\n";
         auto response = this->consumer->consumePacket(packet);
         if (!response) {
             // whole data is received
             this->outputMutex->lock();
             this->outputDataQueue->push(this->consumer->getResult());
             this->outputMutex->unlock();
-            this->consumer.release();
+            this->consumer.reset();
         }
     }
     this->acknowledgePacket(packet);
@@ -279,24 +280,26 @@ void TransmissionController::produceDataPackets() {
 
     // if we are not currently producing anything, skip
     if (!this->producer) {
+        std::cout << "checking queue\n";
         this->inputMutex->lock();
-        if (!this->inputDataQueue->empty()) {
-            DataEntity next = this->inputDataQueue->front();
-            this->inputDataQueue->pop();
-            switch (next.type) {
-                case DataEntity::InputType::File:
-                    this->producer = std::make_unique<FilePacketProducer>(next.payload);
-                    break;
-                case DataEntity::InputType::Text:
-                    this->producer = std::make_unique<TextPacketProducer>(next.payload, this->textFragmented);
-                    break;
-            }
+        if(this->inputDataQueue->empty()) {
+            this->inputMutex->unlock();
+            return;
+        }
+        DataEntity next = this->inputDataQueue->front();
+        this->inputDataQueue->pop();
+        switch (next.type) {
+            case DataEntity::InputType::File:
+                this->producer = std::make_unique<FilePacketProducer>(next.payload);
+                break;
+            case DataEntity::InputType::Text:
+                this->producer = std::make_unique<TextPacketProducer>(next.payload, this->textFragmented);
+                break;
         }
         this->inputMutex->unlock();
-        return;
     }
 
-    while (this->outputPackets.size() >= TransmissionController::queuedPacketsCount) {
+    while (this->outputPackets.size() < TransmissionController::queuedPacketsCount) {
         auto packet = this->producer->producePacket(
                 this->builder, this->hot && !this->established, this->quickClose
         );
@@ -306,7 +309,7 @@ void TransmissionController::produceDataPackets() {
                 this->closing = true;
             this->send(packet.value());
         } else { // this data transmission is over
-            this->producer.release();
+            this->producer.reset();
             return;
         }
     }

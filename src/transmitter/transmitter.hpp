@@ -42,6 +42,11 @@ public:
     Transmitter &setTextFragmented();
     Transmitter &setHotClose();
 
+    bool isClosing() const;
+    std::optional<std::string> getOutput();
+
+    void close();
+
     ~Transmitter();
 };
 

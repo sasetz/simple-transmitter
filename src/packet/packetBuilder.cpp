@@ -51,7 +51,7 @@ Packet PacketBuilder::getHotTextFragmentStart(const std::string &textBlock) {
 }
 
 Packet PacketBuilder::getFileStart(const std::string &name) {
-    // add the data block size to the sequence number to indicate how much we've sentPackets
+    // add the data block size to the sequence number to indicate how much we've sent
     Packet temp(this->sequenceNumber);
     this->sequenceNumber += name.size();
     this->sequenceNumber++;

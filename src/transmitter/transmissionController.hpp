@@ -71,7 +71,7 @@ private:
     void processPacket(std::optional<Packet> optionalPacket);
 
     // processes request packets, i.e. packets that send data
-    void consumeDataPacket(Packet packet);
+    void consumeDataPacket(const Packet& packet);
 
     // checks if there is new data that needs to be sent
     void produceDataPackets();

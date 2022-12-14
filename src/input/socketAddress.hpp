@@ -24,6 +24,7 @@ public:
     explicit SocketAddress(uint16_t port);
 
     SocketAddress(const std::string& internal, const std::string& external);
+    SocketAddress(const std::string &external, uint16_t internalPort);
 
     uint32_t getNetworkExternalIp() const;
     uint32_t getNetworkInternalIp() const;

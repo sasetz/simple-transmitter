@@ -11,7 +11,6 @@
 class FilePacketProducer : public PacketProducer {
 private:
     std::string filePath;
-    std::ifstream fileStream;
     // true if we still have to send empty fragment packet to end the file transmission
     // this packet needs to be sent if end-of-file was reached and last fragment had full length
     bool hasClosingPacket = false;
@@ -19,7 +18,8 @@ private:
         std::vector<std::byte> bytes (fragmentLength);
 
         // check if the file is closed or eof is already reached
-        if(!stream.is_open() || !stream.read(reinterpret_cast<char *>(bytes.data()), fragmentLength)) {
+        stream.read(reinterpret_cast<char *>(bytes.data()), fragmentLength);
+        if(!stream.is_open() || stream.gcount() == 0) {
             return std::nullopt;
         }
 
@@ -28,8 +28,7 @@ private:
         return ByteData(bytes);
     }
 public:
-    FilePacketProducer(const std::string &path);
-    ~FilePacketProducer();
+    explicit FilePacketProducer(const std::string &path);
 
     std::optional<Packet>
     producePacket(PacketBuilder &builder, bool isHotConnection, bool isHotClose) override;

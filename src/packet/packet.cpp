@@ -33,6 +33,8 @@ void Packet::setFile(const std::string &name) {
 
     this->fil = true;
     this->data = ByteData(name);
+    this->length = this->data.size();
+    this->fragLength = this->length;
 }
 
 void Packet::setText() {
@@ -214,7 +216,7 @@ uint32_t Packet::getAckNumber() const {
 }
 
 bool Packet::validate() {
-    return this->data.size() == 0 || this->generateChecksum(this->data) == this->checksum;
+    return this->checksum == 0 || this->generateChecksum(this->data) == this->checksum;
 }
 
 uint16_t Packet::getLength() const {

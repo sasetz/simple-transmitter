@@ -5,6 +5,8 @@
 #include <string>
 class InputParameters {
 public:
+    InputParameters() {}
+
     bool isInputting;
     bool isHotConnection;
     std::string filePath;

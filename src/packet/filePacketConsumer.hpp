@@ -8,10 +8,8 @@
 class FilePacketConsumer : public PacketConsumer {
 private:
     std::string filename;
-    std::ofstream fileStream;
 public:
     FilePacketConsumer();
-    ~FilePacketConsumer();
 
     bool consumePacket(Packet packet) override;
 
