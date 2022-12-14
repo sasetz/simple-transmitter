@@ -19,6 +19,8 @@ private:
 
         // check if the file is closed or eof is already reached
         stream.read(reinterpret_cast<char *>(bytes.data()), fragmentLength);
+        bool temp = stream.eof();
+        bool temp1 = stream.bad();
         if(!stream.is_open() || stream.gcount() == 0) {
             return std::nullopt;
         }

@@ -3,10 +3,7 @@
 
 FilePacketConsumer::FilePacketConsumer() = default;
 
-int consumeCounter = 0;
 bool FilePacketConsumer::consumePacket(Packet packet) {
-    consumeCounter++;
-    std::cout << consumeCounter << "\n";
     if(!this->fileStream.is_open() && packet.isFile()) {
         this->filename = packet.getData().toString();
         this->fileStream.open(this->filename, std::ofstream::out | std::ofstream::binary);

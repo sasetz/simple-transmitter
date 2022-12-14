@@ -64,3 +64,4 @@ std::optional<Packet> TextPacketProducer::producePacket(PacketBuilder &builder, 
 
     return builder.getTextFragment(output);
 }
+

@@ -55,6 +55,15 @@ int main(int argc, char *argv[]) {
 
         transmitter.run(false);
 
+        while(true) {
+            auto output = transmitter.getOutput();
+            if(!output) {
+                std::this_thread::yield();
+                continue;
+            }
+            std::cout << output.value();
+        }
+
         std::cout << "No packet received, exiting\n";
     } else {
         // sender
@@ -62,8 +71,16 @@ int main(int argc, char *argv[]) {
                                                                  PORT)); // don't care what address or port is assigned
         std::cout << "Connecting...\n";
         transmitter.addFile("3.pdf");
-
         transmitter.run(true);
+
+//        std::string line;
+//        do {
+//            std::cout << "input your text: \n";
+//            std::cin >> line;
+//
+//            transmitter.addText(line);
+//        } while (!line.empty());
+
     }
     return 0;
 }

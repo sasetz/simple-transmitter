@@ -6,6 +6,7 @@
 #include "filePacketConsumer.hpp"
 #include "filePacketProducer.hpp"
 #include "textPacketProducer.hpp"
+#include "textPacketConsumer.hpp"
 
 using namespace std::chrono_literals;
 
@@ -71,7 +72,8 @@ void TransmissionController::run(std::chrono::duration<int, std::milli> timeout)
         std::cout << "foreign: " << this->nextSequenceNumber << "; ";
         std::cout << "mine: " << this->builder.getSequenceNumber() << "\n";
         retryCount++;
-        if(this->closing && this->isProducingFinished() && this->isConsumingFinished()) {
+        if(this->closing && this->isProducingFinished() && this->isConsumingFinished() && this->sentPackets.empty()
+        && this->outputPackets.empty()) {
             // initiate closing sequence
             this->closeConnection();
             this->isRunning = false;
@@ -101,7 +103,7 @@ void TransmissionController::run(std::chrono::duration<int, std::milli> timeout)
 }
 
 void TransmissionController::processPacket(std::optional<Packet> optionalPacket) {
-    if (!optionalPacket) {
+    if (!optionalPacket && this->outputPackets.size() < this->queuedPacketsCount) {
         // if no packet is accepted, send a keep-alive to check if the connection is functional
         this->send(this->builder.getKeepAlive());
         // debug
@@ -176,11 +178,12 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
             return;
         }
     }
+    this->inputPackets.push_back(optionalPacket.value());
 }
 
 // returns true if input queue contains a packet
 bool TransmissionController::hasNext() {
-    return !this->inputPackets.empty() && this->nextSequenceNumber == this->inputPackets.front().getSequenceNumber();
+    return !this->inputPackets.empty();
 }
 
 // sends packets from the queue
@@ -251,7 +254,7 @@ void TransmissionController::consumeDataPacket(const Packet& packet) {
 
     if (packet.isText()) {
         // we got a packet that begins transmitting text
-        this->consumer = std::make_unique<FilePacketConsumer>();
+        this->consumer = std::make_unique<TextPacketConsumer>();
 
         // IMPORTANT ///////////////////////////////////////////////////////////////
         // do not return: go forward and process the packet if it is also a fragment
@@ -327,7 +330,7 @@ void TransmissionController::closeConnection() {
             return;
         }
     }
-    std::cout << "connection terminated badly\n";
+    std::cout << "connection terminated\n";
 }
 
 bool TransmissionController::isHot() const {

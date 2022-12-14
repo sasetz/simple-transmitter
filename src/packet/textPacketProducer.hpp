@@ -10,6 +10,7 @@ private:
     bool hasClosingPacket = false;
     bool hadStarted = false;
     bool isHotFragment;
+
 public:
     TextPacketProducer(const std::string &text, bool isHotFragment);
     std::optional<Packet> producePacket(PacketBuilder &builder, bool isHotConnection, bool isHotClose) override;
