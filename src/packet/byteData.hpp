@@ -11,8 +11,8 @@ private:
     std::vector<std::byte> data;
 public:
     ByteData();
-    explicit ByteData(unsigned long number);
-    explicit ByteData(unsigned short number);
+    explicit ByteData(uint32_t number);
+    explicit ByteData(uint16_t number);
     explicit ByteData(bool value);
     explicit ByteData(char *buffer, size_t length);
     // copy constructor
@@ -29,15 +29,15 @@ public:
     std::vector<std::byte> getData();
 
     // converts host unsigned long into network unsigned long vector of bytes
-    static std::vector<std::byte> longToBytes(unsigned long input);
-    static unsigned long bytesToLong(std::vector<std::byte> input);
-    static std::vector<std::byte> shortToBytes(unsigned short input);
-    static unsigned short bytesToShort(std::vector<std::byte> input);
+    static std::vector<std::byte> longToBytes(uint32_t input);
+    static uint32_t bytesToLong(std::vector<std::byte> input);
+    static std::vector<std::byte> shortToBytes(uint16_t input);
+    static uint16_t bytesToShort(std::vector<std::byte> input);
 
     // overload += operator, so that data of the second is added at the end of the first
     ByteData &operator+=(ByteData other);
-    ByteData &operator+=(unsigned long other);
-    ByteData &operator+=(unsigned short other);
+    ByteData &operator+=(uint32_t other);
+    ByteData &operator+=(uint16_t other);
     ByteData &operator+=(std::byte other);
     std::byte operator[](int index);
     ByteData slice(int from, int to);

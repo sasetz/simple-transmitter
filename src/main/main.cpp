@@ -27,7 +27,6 @@ int main(int argc, char *argv[]) {
         Transmitter transmitter(SocketAddress::getServerAddress(PORT));
         // since we don't know our host, yet
         std::cout << "Listening for connections...\n";
-        std::cout << sizeof(unsigned long) << "\n";
 
         transmitter.run(false);
 

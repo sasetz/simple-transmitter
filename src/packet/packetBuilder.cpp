@@ -4,7 +4,7 @@
 PacketBuilder::PacketBuilder() {
     std::random_device entropy; // generate entropy from the device
     std::default_random_engine generator(entropy());
-    std::uniform_int_distribution<unsigned long> distribution;
+    std::uniform_int_distribution<uint32_t> distribution;
     this->sequenceNumber = distribution(generator);
     this->fragmentLength = 512;
 }
@@ -16,7 +16,7 @@ Packet PacketBuilder::getStart() {
     return temp;
 }
 
-void PacketBuilder::setFragmentLength(unsigned short fragLength) {
+void PacketBuilder::setFragmentLength(uint16_t fragLength) {
     this->fragmentLength = fragLength;
 }
 
@@ -77,13 +77,13 @@ Packet PacketBuilder::getTextFragmentStart(const std::string &textBlock) {
     return temp;
 }
 
-Packet PacketBuilder::getAcknowledgement(unsigned long acknowledgeNumber) {
+Packet PacketBuilder::getAcknowledgement(uint32_t acknowledgeNumber) {
     Packet temp(this->sequenceNumber);
     temp.setAcknowledged(acknowledgeNumber);
     return temp;
 }
 
-Packet PacketBuilder::getNak(unsigned long nakNumber) {
+Packet PacketBuilder::getNak(uint32_t nakNumber) {
     Packet temp(this->sequenceNumber);
     temp.setNotAcknowledged(nakNumber);
     return temp;
@@ -139,6 +139,6 @@ Packet PacketBuilder::getStop() {
     return temp;
 }
 
-unsigned short PacketBuilder::getFragmentLength() const {
+uint16_t PacketBuilder::getFragmentLength() const {
     return this->fragmentLength;
 }

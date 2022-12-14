@@ -15,7 +15,7 @@ private:
     // true if we still have to send empty fragment packet to end the file transmission
     // this packet needs to be sent if end-of-file was reached and last fragment had full length
     bool hasClosingPacket = false;
-    static std::optional<ByteData> getBytes(std::ifstream &stream, unsigned short fragmentLength){
+    static std::optional<ByteData> getBytes(std::ifstream &stream, uint16_t fragmentLength){
         std::vector<std::byte> bytes (fragmentLength);
 
         // check if the file is closed or eof is already reached

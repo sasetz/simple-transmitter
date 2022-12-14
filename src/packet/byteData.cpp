@@ -16,11 +16,11 @@ ByteData::ByteData(std::vector<std::byte> dataBlock) {
     this->data = std::move(dataBlock);
 }
 
-ByteData::ByteData(unsigned long number) {
+ByteData::ByteData(uint32_t number) {
     this->data = longToBytes(number);
 }
 
-ByteData::ByteData(unsigned short number) {
+ByteData::ByteData(uint16_t number) {
     this->data = shortToBytes(number);
 }
 
@@ -41,9 +41,9 @@ ByteData::ByteData(const std::string& string) {
     }
 }
 
-std::vector<std::byte> ByteData::longToBytes(unsigned long input) {
+std::vector<std::byte> ByteData::longToBytes(uint32_t input) {
     std::vector<std::byte> output;
-    unsigned long networkLong = htonl(input);
+    uint32_t networkLong = htonl(input);
 
     // magic trick to make you think that the long is actually 4 chars
     char* pointer = reinterpret_cast<char*>(&networkLong);
@@ -53,8 +53,8 @@ std::vector<std::byte> ByteData::longToBytes(unsigned long input) {
     return output;
 }
 
-unsigned long ByteData::bytesToLong(std::vector<std::byte> input) {
-    unsigned long hostLong = 0;
+uint32_t ByteData::bytesToLong(std::vector<std::byte> input) {
+    uint32_t hostLong = 0;
     // magic trick to iterate over single byte of the number
     char* pointer = reinterpret_cast<char*>(&hostLong);
 
@@ -66,9 +66,9 @@ unsigned long ByteData::bytesToLong(std::vector<std::byte> input) {
     return ntohl(hostLong);
 }
 
-std::vector<std::byte> ByteData::shortToBytes(unsigned short input) {
+std::vector<std::byte> ByteData::shortToBytes(uint16_t input) {
     std::vector<std::byte> output;
-    unsigned short networkLong = htons(input);
+    uint16_t networkLong = htons(input);
     // magic trick to iterate over single byte of the number
     char* pointer = reinterpret_cast<char*>(&networkLong);
 
@@ -79,8 +79,8 @@ std::vector<std::byte> ByteData::shortToBytes(unsigned short input) {
     return output;
 }
 
-unsigned short ByteData::bytesToShort(std::vector<std::byte> input) {
-    unsigned short hostShort = 0;
+uint16_t ByteData::bytesToShort(std::vector<std::byte> input) {
+    uint16_t hostShort = 0;
     // magic trick to iterate over single byte of the number
     char* pointer = reinterpret_cast<char*>(&hostShort);
 
@@ -97,13 +97,13 @@ ByteData &ByteData::operator+=(ByteData other) {
     return *this;
 }
 
-ByteData &ByteData::operator+=(unsigned long other) {
+ByteData &ByteData::operator+=(uint32_t other) {
     auto temp = longToBytes(other);
     this->data.insert(this->data.end(), temp.begin(), temp.end());
     return *this;
 }
 
-ByteData &ByteData::operator+=(unsigned short other) {
+ByteData &ByteData::operator+=(uint16_t other) {
     auto temp = shortToBytes(other);
     this->data.insert(this->data.end(), temp.begin(), temp.end());
     return *this;

@@ -17,11 +17,11 @@ private:
     bool frg = false;
 
     // other fields, all in HOST format
-    unsigned long sequenceNumber = 0;
-    unsigned long acknowledgementNumber = 0;
-    unsigned long checksum = 0;
-    unsigned short length = 0;
-    unsigned short fragLength = 0;
+    uint32_t sequenceNumber = 0;
+    uint32_t acknowledgementNumber = 0;
+    uint32_t checksum = 0;
+    uint16_t length = 0;
+    uint16_t fragLength = 0;
 
     ByteData data;
 
@@ -30,16 +30,16 @@ private:
     static std::string toHex(std::byte number);
 
 public:
-    explicit Packet(unsigned long seqNumber);
+    explicit Packet(uint32_t seqNumber);
     explicit Packet(ByteData bytePacket);
 
     void setOpen();
 
     void setClose();
 
-    void setAcknowledged(unsigned long ackNumber);
+    void setAcknowledged(uint32_t ackNumber);
 
-    void setNotAcknowledged(unsigned long ackNumber);
+    void setNotAcknowledged(uint32_t ackNumber);
 
     void setKeepAlive();
 
@@ -47,7 +47,7 @@ public:
 
     void setText();
 
-    void setFragment(const ByteData& dataBlock, unsigned short fragmentLength);
+    void setFragment(const ByteData& dataBlock, uint16_t fragmentLength);
 
     [[nodiscard]] bool isOpen() const;
     [[nodiscard]] bool isClose() const;
@@ -60,15 +60,15 @@ public:
 
     bool validate();
 
-    [[nodiscard]] unsigned long getSequenceNumber() const;
-    [[nodiscard]] unsigned long getAckNumber() const;
-    [[nodiscard]] unsigned short getLength() const;
-    [[nodiscard]] unsigned short getFragmentLength() const;
+    [[nodiscard]] uint32_t getSequenceNumber() const;
+    [[nodiscard]] uint32_t getAckNumber() const;
+    [[nodiscard]] uint16_t getLength() const;
+    [[nodiscard]] uint16_t getFragmentLength() const;
     [[nodiscard]] ByteData getData() const;
 
     // checks if the packet is valid and assembles it to bytes
     ByteData build();
-    static unsigned long generateChecksum(ByteData data);
+    static uint32_t generateChecksum(ByteData data);
     std::string dump();
 
     // exception that signals that something went wrong while creating a packet

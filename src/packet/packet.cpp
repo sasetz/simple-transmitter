@@ -2,7 +2,7 @@
 #include "zlib.h"
 #include <iomanip>
 
-Packet::Packet(unsigned long seqNumber) : sequenceNumber(seqNumber) {}
+Packet::Packet(uint32_t seqNumber) : sequenceNumber(seqNumber) {}
 
 void Packet::setOpen() {
     this->opn = true;
@@ -12,12 +12,12 @@ void Packet::setClose() {
     this->rst = true;
 }
 
-void Packet::setAcknowledged(unsigned long ackNumber) {
+void Packet::setAcknowledged(uint32_t ackNumber) {
     this->ack = true;
     this->acknowledgementNumber = ackNumber;
 }
 
-void Packet::setNotAcknowledged(unsigned long ackNumber) {
+void Packet::setNotAcknowledged(uint32_t ackNumber) {
     this->nak = true;
     this->acknowledgementNumber = ackNumber;
 }
@@ -39,7 +39,7 @@ void Packet::setText() {
     this->txt = true;
 }
 
-void Packet::setFragment(const ByteData& dataBlock, unsigned short fragmentLength) {
+void Packet::setFragment(const ByteData& dataBlock, uint16_t fragmentLength) {
     this->frg = true;
     this->data = dataBlock;
     this->fragLength = fragmentLength;
@@ -113,8 +113,8 @@ Packet::Packet(ByteData bytePacket) {
     this->data = bytePacket.slice(20, this->length + 20);
 }
 
-unsigned long Packet::generateChecksum(ByteData data) {
-    unsigned long crc = crc32(0L, Z_NULL, 0);
+uint32_t Packet::generateChecksum(ByteData data) {
+    uint32_t crc = crc32(0L, Z_NULL, 0);
 
     for(int i = 0; i < data.size(); i++) {
         crc = crc32(crc, reinterpret_cast<const Bytef *>(&(data.getData()[i])), 1);
@@ -205,11 +205,11 @@ bool Packet::isFragment() const {
     return this->frg;
 }
 
-unsigned long Packet::getSequenceNumber() const {
+uint32_t Packet::getSequenceNumber() const {
     return this->sequenceNumber;
 }
 
-unsigned long Packet::getAckNumber() const {
+uint32_t Packet::getAckNumber() const {
     return this->acknowledgementNumber;
 }
 
@@ -217,7 +217,7 @@ bool Packet::validate() {
     return this->data.size() == 0 || this->generateChecksum(this->data) == this->checksum;
 }
 
-unsigned short Packet::getLength() const {
+uint16_t Packet::getLength() const {
     return this->length;
 }
 
@@ -225,6 +225,6 @@ ByteData Packet::getData() const {
     return this->data;
 }
 
-unsigned short Packet::getFragmentLength() const {
+uint16_t Packet::getFragmentLength() const {
     return this->fragLength;
 }

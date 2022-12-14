@@ -229,7 +229,7 @@ void TransmissionController::send(const Packet &packet) {
     this->outputPackets.push(packet);
 }
 
-void TransmissionController::resend(unsigned long sequenceNumber) {
+void TransmissionController::resend(uint32_t sequenceNumber) {
     for (auto &sentPacket: this->sentPackets) {
         if (sequenceNumber == sentPacket.first.getSequenceNumber()) {
             sentPacket.second = std::chrono::steady_clock::now();

@@ -39,14 +39,14 @@ private:
 
     Socket socket;
     PacketBuilder builder;
-    unsigned long nextSequenceNumber = 0;
+    uint32_t nextSequenceNumber = 0;
 
     void flushQueue();
     bool processAcknowledgement(const Packet& packet);
     void acknowledgePacket(const Packet& packet);
     void send(const Packet& packet);
     void resendAll();
-    void resend(unsigned long sequenceNumber);
+    void resend(uint32_t sequenceNumber);
     void resend(const Packet& packet);
 
     int windowSize = 10;

@@ -7,36 +7,36 @@
 class SocketAddress {
 private:
     // external IP address and port in NETWORK format
-    unsigned long externalIp;
-    unsigned long internalIp;
+    uint32_t externalIp;
+    uint32_t internalIp;
 
     // internal IP address and port in NETWORK format
-    unsigned short externalPort;
-    unsigned short internalPort;
+    uint16_t externalPort;
+    uint16_t internalPort;
 public:
-    static SocketAddress getServerAddress(unsigned short port);
-    static SocketAddress getClientAddress(unsigned long externalIp, unsigned short externalPort);
+    static SocketAddress getServerAddress(uint16_t port);
+    static SocketAddress getClientAddress(uint32_t externalIp, uint16_t externalPort);
 
-    SocketAddress(unsigned long internalIp, unsigned short internalPort,
-                  unsigned long externalIp, unsigned short externalPort);
-    SocketAddress(unsigned long externalIp, unsigned short externalPort);
+    SocketAddress(uint32_t internalIp, uint16_t internalPort,
+                  uint32_t externalIp, uint16_t externalPort);
+    SocketAddress(uint32_t externalIp, uint16_t externalPort);
     SocketAddress();
-    explicit SocketAddress(unsigned short port);
+    explicit SocketAddress(uint16_t port);
 
     SocketAddress(const std::string& internal, const std::string& external);
 
-    unsigned long getNetworkExternalIp() const;
-    unsigned long getNetworkInternalIp() const;
-    unsigned short getNetworkExternalPort() const;
-    unsigned short getNetworkInternalPort() const;
+    uint32_t getNetworkExternalIp() const;
+    uint32_t getNetworkInternalIp() const;
+    uint16_t getNetworkExternalPort() const;
+    uint16_t getNetworkInternalPort() const;
 
-    unsigned long getHostExternalIp() const;
-    unsigned long getHostInternalIp() const;
-    unsigned short getHostExternalPort() const;
-    unsigned short getHostInternalPort() const;
+    uint32_t getHostExternalIp() const;
+    uint32_t getHostInternalIp() const;
+    uint16_t getHostExternalPort() const;
+    uint16_t getHostInternalPort() const;
 
-    void setNetworkExternalIp(unsigned long ip);
-    void setNetworkExternalPort(unsigned short port);
+    void setNetworkExternalIp(uint32_t ip);
+    void setNetworkExternalPort(uint16_t port);
 };
 
 #endif

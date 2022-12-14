@@ -9,7 +9,7 @@
 TEST_SUITE_BEGIN("byte data");
 TEST_CASE("long to bytes function works") {
     // setup
-    unsigned long hostLong = 0xBB'69'5F'C8;
+    uint32_t hostLong = 0xBB'69'5F'C8;
     std::byte supposed[4] {
             (std::byte)0xBB,
             (std::byte)0x69,
@@ -28,7 +28,7 @@ TEST_CASE("long to bytes function works") {
 
 TEST_CASE("bytes to long function works") {
     // setup
-    unsigned long hostLong = 0xBB'69'5F'C8;
+    uint32_t hostLong = 0xBB'69'5F'C8;
     std::vector<std::byte> bytes {
             (std::byte)0xBB,
             (std::byte)0x69,
@@ -36,14 +36,14 @@ TEST_CASE("bytes to long function works") {
             (std::byte)0xC8
     };
     // running
-    unsigned long output = ByteData::bytesToLong(bytes);
+    uint32_t output = ByteData::bytesToLong(bytes);
     // asserting
     CHECK_EQ(output, hostLong);
 }
 
 TEST_CASE("short to bytes function works") {
     // setup
-    unsigned short hostShort = 0xF3'94;
+    uint16_t hostShort = 0xF3'94;
     std::byte supposed[2] {
             (std::byte)0xF3,
             (std::byte)0x94
@@ -58,19 +58,19 @@ TEST_CASE("short to bytes function works") {
 
 TEST_CASE("bytes to short function works") {
     // setup
-    unsigned short hostShort = 0xF3'94;
+    uint16_t hostShort = 0xF3'94;
     std::vector<std::byte> bytes {
             (std::byte)0xF3,
             (std::byte)0x94
     };
     // running
-    unsigned short output = ByteData::bytesToShort(bytes);
+    uint16_t output = ByteData::bytesToShort(bytes);
     // asserting
     CHECK_EQ(output, hostShort);
 }
 
 TEST_CASE("slicing works") {
-    ByteData data(0xBB'69'5F'C8UL);
+    ByteData data((uint32_t)0xBB'69'5F'C8UL);
     REQUIRE_EQ(data.size(), 4);
     SUBCASE("index operator"){
         CHECK_EQ(data[0], std::byte{0xBB});
@@ -93,9 +93,9 @@ TEST_CASE("slicing works") {
 }
 
 TEST_CASE("add operator works") {
-    ByteData data(0xBB'69'5F'C8UL);
+    ByteData data((uint32_t)0xBB'69'5F'C8UL);
     SUBCASE("other byte data") {
-        ByteData other(0x7B'12'FF'05UL);
+        ByteData other((uint32_t)0x7B'12'FF'05UL);
         data += other;
         CHECK_EQ(data.size(), 8);
         CHECK_EQ(data[0], std::byte{0xBB});
@@ -107,8 +107,8 @@ TEST_CASE("add operator works") {
         CHECK_EQ(data[6], std::byte{0xFF});
         CHECK_EQ(data[7], std::byte{0x05});
     }
-    SUBCASE("unsigned long") {
-        data += 0x7B'12'FF'05UL;
+    SUBCASE("32 bits") {
+        data += (uint32_t)0x7B'12'FF'05UL;
         CHECK_EQ(data.size(), 8);
         CHECK_EQ(data[0], std::byte{0xBB});
         CHECK_EQ(data[1], std::byte{0x69});
@@ -119,8 +119,8 @@ TEST_CASE("add operator works") {
         CHECK_EQ(data[6], std::byte{0xFF});
         CHECK_EQ(data[7], std::byte{0x05});
     }
-    SUBCASE("unsigned short") {
-        data += (unsigned short)0x7B'12;
+    SUBCASE("16 bits") {
+        data += (uint16_t)0x7B'12;
         CHECK_EQ(data.size(), 6);
         CHECK_EQ(data[0], std::byte{0xBB});
         CHECK_EQ(data[1], std::byte{0x69});
@@ -168,8 +168,8 @@ TEST_CASE("creating an open packet") {
 }
 
 TEST_CASE("checksum calculation works") {
-    ByteData data(0xBB'69'5F'C8UL);
-    unsigned long output = Packet::generateChecksum(data);
+    ByteData data((uint32_t)0xBB'69'5F'C8UL);
+    uint32_t output = Packet::generateChecksum(data);
     CHECK_EQ(output, 78507313UL);
 }
 
@@ -182,9 +182,9 @@ TEST_CASE("file data to packets works") {
     PacketBuilder builder;
     builder.setFragmentLength(8);
 
-    std::optional<Packet> anOptional = data.producePacket(builder, false);
+    std::optional<Packet> anOptional = data.producePacket(builder, false, false);
     CHECK(anOptional->isFile());
-    anOptional = data.producePacket(builder, false);
+    anOptional = data.producePacket(builder, false, false);
     int counter = 0;
     while(anOptional) {
         CHECK(anOptional->isFragment());
@@ -194,7 +194,7 @@ TEST_CASE("file data to packets works") {
             CHECK_EQ(anOptional->getLength(), 8);
         }
         counter++;
-        anOptional = data.producePacket(builder, false);
+        anOptional = data.producePacket(builder, false, false);
     }
 }
 
@@ -203,9 +203,9 @@ TEST_CASE("text data to packets works") {
     PacketBuilder builder;
     builder.setFragmentLength(8);
 
-    std::optional<Packet> anOptional = data.producePacket(builder, false);
+    std::optional<Packet> anOptional = data.producePacket(builder, false, false);
     CHECK(anOptional->isText());
-    anOptional = data.producePacket(builder, false);
+    anOptional = data.producePacket(builder, false, false);
     int counter = 0;
     while(anOptional) {
         CHECK(anOptional->isFragment());
@@ -215,7 +215,7 @@ TEST_CASE("text data to packets works") {
             CHECK_EQ(anOptional->getLength(), 8);
         }
         counter++;
-        anOptional = data.producePacket(builder, false);
+        anOptional = data.producePacket(builder, false, false);
     }
 }
 

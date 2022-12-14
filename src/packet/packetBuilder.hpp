@@ -8,13 +8,13 @@
 // manages seq# and provides an interface for constructing packets
 class PacketBuilder {
 private:
-    unsigned long sequenceNumber;
-    unsigned short fragmentLength;
+    uint32_t sequenceNumber;
+    uint16_t fragmentLength;
 public:
     PacketBuilder();
-    void setFragmentLength(unsigned short fragLength);
-    [[nodiscard]] unsigned short getFragmentLength() const;
-    unsigned long getSequenceNumber() {
+    void setFragmentLength(uint16_t fragLength);
+    [[nodiscard]] uint16_t getFragmentLength() const;
+    uint32_t getSequenceNumber() {
         return this->sequenceNumber;
     };
 
@@ -27,8 +27,8 @@ public:
     Packet getTextStart();
     Packet getTextFragmentStart(const std::string &textBlock);
 
-    Packet getAcknowledgement(unsigned long acknowledgeNumber);
-    Packet getNak(unsigned long nakNumber);
+    Packet getAcknowledgement(uint32_t acknowledgeNumber);
+    Packet getNak(uint32_t nakNumber);
 
     Packet getKeepAlive();
 

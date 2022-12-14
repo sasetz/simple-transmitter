@@ -1,8 +1,8 @@
 #include "socketAddress.hpp"
 #include <netinet/in.h>
 
-SocketAddress::SocketAddress(unsigned long internalIp, unsigned short internalPort,
-                             unsigned long externalIp, unsigned short externalPort) :
+SocketAddress::SocketAddress(uint32_t internalIp, uint16_t internalPort,
+                             uint32_t externalIp, uint16_t externalPort) :
         externalIp(externalIp),
         externalPort(externalPort),
         internalIp(internalIp),
@@ -23,60 +23,60 @@ SocketAddress::SocketAddress(const std::string &internal,
     this->externalPort = htons(std::stoi(external.substr(delimiterPosition, external.size())));
 }
 
-SocketAddress::SocketAddress(unsigned long externalIp, unsigned short externalPort) :
+SocketAddress::SocketAddress(uint32_t externalIp, uint16_t externalPort) :
         externalIp(externalIp), externalPort(externalPort), internalIp(INADDR_ANY), internalPort(0) {}
 
 SocketAddress::SocketAddress() :
         externalIp(0), externalPort(0), internalIp(INADDR_ANY), internalPort(0) {}
 
-SocketAddress::SocketAddress(unsigned short port) :
+SocketAddress::SocketAddress(uint16_t port) :
         externalIp(0), externalPort(0), internalIp(INADDR_ANY), internalPort(port) {}
 
-unsigned long SocketAddress::getNetworkExternalIp() const {
+uint32_t SocketAddress::getNetworkExternalIp() const {
     return htonl(this->externalIp);
 }
 
-unsigned long SocketAddress::getNetworkInternalIp() const {
+uint32_t SocketAddress::getNetworkInternalIp() const {
     return htonl(this->internalIp);
 }
 
-unsigned short SocketAddress::getNetworkExternalPort() const {
+uint16_t SocketAddress::getNetworkExternalPort() const {
     return htons(this->externalPort);
 }
 
-unsigned short SocketAddress::getNetworkInternalPort() const {
+uint16_t SocketAddress::getNetworkInternalPort() const {
     return htons(this->internalPort);
 }
 
-unsigned long SocketAddress::getHostExternalIp() const {
+uint32_t SocketAddress::getHostExternalIp() const {
     return this->externalIp;
 }
 
-unsigned long SocketAddress::getHostInternalIp() const {
+uint32_t SocketAddress::getHostInternalIp() const {
     return this->internalIp;
 }
 
-unsigned short SocketAddress::getHostExternalPort() const {
+uint16_t SocketAddress::getHostExternalPort() const {
     return this->externalPort;
 }
 
-unsigned short SocketAddress::getHostInternalPort() const {
+uint16_t SocketAddress::getHostInternalPort() const {
     return this->internalPort;
 }
 
-void SocketAddress::setNetworkExternalIp(unsigned long ip) {
+void SocketAddress::setNetworkExternalIp(uint32_t ip) {
     this->externalIp = ntohl(ip);
 }
 
-void SocketAddress::setNetworkExternalPort(unsigned short port) {
+void SocketAddress::setNetworkExternalPort(uint16_t port) {
     this->externalPort = ntohs(port);
 }
 
-SocketAddress SocketAddress::getServerAddress(unsigned short port) {
+SocketAddress SocketAddress::getServerAddress(uint16_t port) {
     return SocketAddress(port);
 }
 
-SocketAddress SocketAddress::getClientAddress(unsigned long externalIp, unsigned short externalPort) {
+SocketAddress SocketAddress::getClientAddress(uint32_t externalIp, uint16_t externalPort) {
     return {externalIp, externalPort};
 }
 
