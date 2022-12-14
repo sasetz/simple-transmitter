@@ -31,6 +31,8 @@ private:
     bool textFragmented = false;
     bool hotClose = false;
     SocketAddress socketAddress;
+
+    std::string mutateString(const std::string &input);
 public:
     explicit Transmitter(SocketAddress address);
 

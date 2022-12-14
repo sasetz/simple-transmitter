@@ -22,5 +22,7 @@ mkdir build && cmake -S . -B build/ && cmake --build build/
 This produces binary file `simple-transmitter`. This file can then be placed anywhere you like and run using
 
 ```
-./simple-transmitter
+build/src/simple-transmitter [-r]
 ```
+
+The `-r` flag is used to signal to the program that it is going to be operating in receiving (server) mode

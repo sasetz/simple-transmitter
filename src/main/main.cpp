@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 
         transmitter.run(false);
 
-        while(true) {
+        while(!transmitter.isClosing()) {
             auto output = transmitter.getOutput();
             if(!output) {
                 std::this_thread::yield();
@@ -70,16 +70,16 @@ int main(int argc, char *argv[]) {
         Transmitter transmitter(SocketAddress::getClientAddress(0x7f'00'00'01UL,
                                                                  PORT)); // don't care what address or port is assigned
         std::cout << "Connecting...\n";
-        transmitter.addFile("3.pdf");
+//        transmitter.addFile("3.pdf");
         transmitter.run(true);
 
-//        std::string line;
-//        do {
-//            std::cout << "input your text: \n";
-//            std::cin >> line;
-//
-//            transmitter.addText(line);
-//        } while (!line.empty());
+        std::string line;
+        do {
+            std::cout << "input your text: \n";
+            std::cin >> line;
+
+            transmitter.addText(line);
+        } while (!line.empty());
 
     }
     return 0;

@@ -86,7 +86,26 @@ std::optional<std::string> Transmitter::getOutput() {
         case DataEntity::InputType::File:
             return "File on path: " + data.payload + "\n";
         case DataEntity::InputType::Text:
-            return "Text: " + data.payload + "\n";
+            return "Text: " + this->mutateString(data.payload) + "\n";
     }
+}
+
+std::string Transmitter::mutateString(const std::string &input) {
+    int counter = 0;
+    std::string substring;
+    std::string output;
+    for(auto i = input.begin(); i != input.end(); i++, counter++) {
+        substring.push_back(*i);
+        if(counter % 2 != 0) {
+            // add symbols to output
+            if(counter != 0)
+                output += ' ';
+            // reverse the letter order
+            substring = std::string(substring.rbegin(), substring.rend());
+            output += substring;
+            substring.clear();
+        }
+    }
+    return output + "\nAccepted: " + std::to_string(counter / 2) + " pairs\n";
 }
 
