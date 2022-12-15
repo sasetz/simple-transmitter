@@ -1,5 +1,6 @@
 #include "packetBuilder.hpp"
 #include <random>
+#include <iostream>
 
 PacketBuilder::PacketBuilder(uint16_t fragLength) {
     std::random_device entropy; // generate entropy from the device

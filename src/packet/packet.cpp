@@ -1,6 +1,7 @@
 #include "packet.hpp"
 #include "zlib.h"
 #include <iomanip>
+#include <random>
 
 Packet::Packet(uint32_t seqNumber) : sequenceNumber(seqNumber) {}
 
@@ -229,4 +230,17 @@ ByteData Packet::getData() const {
 
 uint16_t Packet::getFragmentLength() const {
     return this->fragLength;
+}
+
+Packet Packet::simulateDamage(Packet packet) {
+    std::random_device entropy; // generate entropy from the device
+    std::default_random_engine generator(entropy());
+    std::uniform_int_distribution<short> distribution(1, 100);
+
+    // .02 chance that the packet will get damaged
+    if(distribution(generator) <= 2) {
+        packet.checksum += distribution(generator);
+    }
+
+    return packet;
 }

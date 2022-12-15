@@ -35,7 +35,7 @@ FilePacketProducer::producePacket(PacketBuilder &builder, bool isHotConnection, 
         else
             return builder.getFragment(ByteData());
     }
-    this->hasClosingPacket = this->fileStream.eof() && bytes->size() == builder.getFragmentLength();
+    this->hasClosingPacket = bytes->size() == builder.getFragmentLength();
 
     return builder.getFragment(bytes.value());
 }

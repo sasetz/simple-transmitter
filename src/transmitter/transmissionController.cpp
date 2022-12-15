@@ -123,7 +123,7 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
         // the packet received is damaged
         this->socket.send(builder.getNak(optionalPacket->getSequenceNumber()));
         // debug
-        std::cout << "sending nak\n";
+        std::cout << "sending nak " << optionalPacket->getSequenceNumber() << "\n";
         return;
     }
 
@@ -150,6 +150,7 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
 
     // process nak packets
     if (optionalPacket->isNak()) {
+        std::cout << "received nak for " << optionalPacket->getAckNumber() << "; resending\n";
         this->resend(optionalPacket->getAckNumber());
     }
 
@@ -191,14 +192,14 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
 
 // returns true if input queue contains a packet
 bool TransmissionController::hasNext() {
-    return !this->inputPackets.empty();
+    return !this->inputPackets.empty() && this->inputPackets.front().getSequenceNumber() == this->nextSequenceNumber;
 }
 
 // sends packets from the queue
 void TransmissionController::flushQueue() {
     // send new packets
     while (this->sentPackets.size() < TransmissionController::windowSize && !this->outputPackets.empty()) {
-        socket.send(this->outputPackets.front());
+        socket.send(Packet::simulateDamage(this->outputPackets.front()));
         this->sentPackets.emplace_back(this->outputPackets.front(), std::chrono::steady_clock::now());
         this->outputPackets.pop();
     }
@@ -280,6 +281,7 @@ void TransmissionController::consumeDataPacket(const Packet& packet) {
             this->outputDataQueue->push(this->consumer->getResult());
             this->outputMutex->unlock();
             this->consumer.reset();
+            std::cout << "Some data has arrived!\n";
         }
     }
     this->acknowledgePacket(packet);
@@ -315,16 +317,15 @@ void TransmissionController::produceDataPackets() {
                 this->builder, this->hot && !this->established, this->quickClose
         );
         this->established = true;
-        if (packet) {
-            if (packet->isClose()) {
-                std::cout << "!!!sending hot close\n";
-                this->closing = true;
-            }
-            this->send(packet.value());
-        } else { // this data transmission is over
+        if(!packet) {
+            std::cout << "Data transfer has been completed\n";
             this->producer.reset();
             return;
         }
+        if (packet->isClose())
+            this->closing = true;
+
+        this->send(packet.value());
     }
 }
 

@@ -1,4 +1,3 @@
-#include <getopt.h> // getting the arguments from cli
 #include <iostream>
 #include "transmitter.hpp"
 #include "socketAddress.hpp"

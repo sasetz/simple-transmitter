@@ -70,6 +70,7 @@ public:
     ByteData build();
     static uint32_t generateChecksum(ByteData data);
     std::string dump();
+    static Packet simulateDamage(Packet packet);
 
     // exception that signals that something went wrong while creating a packet
     class PacketException : public std::exception {
