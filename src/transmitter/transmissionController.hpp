@@ -35,6 +35,8 @@ private:
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     bool established = false;
+    bool closeSent = false;
+    bool closeReceived = false;
     bool &closing;
 
     Socket socket;
@@ -60,7 +62,7 @@ private:
     int retryCount = 0;
 
     void establishConnection();
-    void closeConnection();
+    void initiateClose();
 
     // check if there is a packet that needs to be consumed
     bool hasNext();
@@ -82,7 +84,7 @@ public:
     TransmissionController(SocketAddress address, std::shared_ptr<std::queue<DataEntity>> inputDataQueue,
                            std::shared_ptr<std::queue<DataEntity>> outputDataQueue,
                            std::shared_ptr<std::mutex> inputMutex, std::shared_ptr<std::mutex> outputMutex,
-                           bool &isClosing);
+                           bool &isClosing, uint16_t fragLength);
 
     // main cycle of the packet flow
     // manages connection establishment and termination

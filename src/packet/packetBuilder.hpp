@@ -11,10 +11,10 @@ private:
     uint32_t sequenceNumber;
     uint16_t fragmentLength;
 public:
-    PacketBuilder();
+    explicit PacketBuilder(uint16_t fragLength = 512);
     void setFragmentLength(uint16_t fragLength);
     [[nodiscard]] uint16_t getFragmentLength() const;
-    uint32_t getSequenceNumber() {
+    [[nodiscard]] uint32_t getSequenceNumber() const {
         return this->sequenceNumber;
     };
 

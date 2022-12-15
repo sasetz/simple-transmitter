@@ -1,12 +1,12 @@
 #include "packetBuilder.hpp"
 #include <random>
 
-PacketBuilder::PacketBuilder() {
+PacketBuilder::PacketBuilder(uint16_t fragLength) {
     std::random_device entropy; // generate entropy from the device
     std::default_random_engine generator(entropy());
     std::uniform_int_distribution<uint32_t> distribution;
     this->sequenceNumber = distribution(generator);
-    this->fragmentLength = 512;
+    this->fragmentLength = fragLength;
 }
 
 Packet PacketBuilder::getStart() {

@@ -3,8 +3,8 @@
 #include "transmitter.hpp"
 #include "socketAddress.hpp"
 
-void listen(uint16_t port) {
-    Transmitter transmitter(SocketAddress::getServerAddress(port));
+void listen(uint16_t port, uint16_t fragmentLength) {
+    Transmitter transmitter(SocketAddress::getServerAddress(port), fragmentLength);
     // since we don't know our host, yet
     std::cout << "Listening for connections...\n";
 
@@ -45,8 +45,8 @@ void listen(uint16_t port) {
     }
 }
 
-void connect(const std::string& externalSocket) {
-    Transmitter transmitter(SocketAddress(externalSocket, 0));
+void connect(const std::string& externalSocket, uint16_t fragmentLength) {
+    Transmitter transmitter(SocketAddress(externalSocket, 0), fragmentLength);
     // since we don't know our host, yet
     transmitter.run(true);
 
@@ -85,61 +85,40 @@ void connect(const std::string& externalSocket) {
     }
 }
 
-enum class InputMode {
-    Interactive,
-    Listening,
-    SendFile,
-    SendText,
-    SendInput
-};
-
-void input(int argc, char* argv[]) {
-    int opt;
-    InputMode mode;
-    bool listen = false, file = false, text = false, input = false, socket = false, port = false, address = false;
-
-    while((opt = getopt(argc, argv, "l:f:t:is:p:a:")) != -1) {
-        //case 'l':
-            //listen = true;
-    }
-}
-
 void interactivePrompt() {
     uint16_t port = 25565;
     std::string externalSocket = "127.0.0.1:25565";
+    uint16_t fragmentLength = 512;
     int option = -1;
 
-    while(option) {
-        std::cout << "Please, choose your option:\n";
-        std::cout << "[0] Exit\n";
-        std::cout << "[1] Start listening for connections\n";
-        std::cout << "[2] Set internal port number\n";
-        std::cout << "[3] Set external socket\n";
-        std::cout << "[4] Start connection\n";
+    std::cout << "Please, choose your option:\n";
+    std::cout << "[0] Exit\n";
+    std::cout << "[1] Start listening for connections\n";
+    std::cout << "[2] Start connection\n";
+    std::cout << "[3] Change fragment length (512 by default)\n";
 
-        std::cin >> option;
+    std::cin >> option;
 
-        switch (option) {
-            case 0:
-                std::cout << "Exiting...\n";
-                break;
-            case 1:
-                listen(port);
-                break;
-            case 2:
-                std::cout << "Input your port number: ";
-                std::cin >> port;
-                break;
-            case 3:
-                std::cout << "Input socket value (127.0.0.1:1111): ";
-                std::cin >> externalSocket;
-                break;
-            case 4:
-                std::cout << "Connecting to the client...\n";
-                connect(externalSocket);
-                break;
-            default:
-                std::cout << "Invalid option!\n";
-        }
+    switch (option) {
+        case 0:
+            std::cout << "Exiting...\n";
+            break;
+        case 1:
+            std::cout << "Please, specify the port number on which your server should operate: ";
+            std::cin >> port;
+            listen(port, fragmentLength);
+            break;
+        case 2:
+            std::cout << "Input socket value (127.0.0.1:1111): ";
+            std::cin >> externalSocket;
+            std::cout << "Connecting to the client...\n";
+            connect(externalSocket, fragmentLength);
+            break;
+        case 3:
+            std::cout << "Please, input new fragment length: ";
+            std::cin >> fragmentLength;
+            break;
+        default:
+            std::cout << "Invalid option!\n";
     }
 }

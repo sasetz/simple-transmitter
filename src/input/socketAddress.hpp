@@ -6,11 +6,11 @@
 #include <string>
 class SocketAddress {
 private:
-    // external IP address and port in NETWORK format
+    // external IP address and port in HOST format
     uint32_t externalIp;
     uint32_t internalIp;
 
-    // internal IP address and port in NETWORK format
+    // internal IP address and port in HOST format
     uint16_t externalPort;
     uint16_t internalPort;
 public:

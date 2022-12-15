@@ -15,7 +15,7 @@ public:
     // method that generates the next packet that needs to be sent
     virtual std::optional<Packet>
     producePacket(PacketBuilder &builder, bool isHotConnection, bool isHotClose) = 0;
-    ~PacketProducer() {
+    virtual ~PacketProducer() {
         if (this->fileStream.is_open())
             this->fileStream.close();
     };

@@ -27,7 +27,7 @@ Transmitter &Transmitter::setTextFragmented() {
     return *this;
 }
 
-Transmitter::Transmitter(SocketAddress address) {
+Transmitter::Transmitter(SocketAddress address, uint16_t fragmentLength): fragmentLength(fragmentLength) {
     this->socketAddress = address;
     this->closing = false;
 
@@ -46,7 +46,8 @@ void Transmitter::run(bool activeOpen) {
                                                                        this->outputDataQueue,
                                                                        this->inputMutex,
                                                                        this->outputMutex,
-                                                                       std::ref(this->closing));
+                                                                       std::ref(this->closing),
+                                                                       this->fragmentLength);
     transmissionController->setActiveOpen(activeOpen);
     transmissionController->setHot(this->hotConnection);
     transmissionController->setQuickClose(this->hotClose);

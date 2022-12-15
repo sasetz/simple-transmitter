@@ -7,11 +7,8 @@ FilePacketProducer::FilePacketProducer(const std::string &path) {
     this->filePath = path;
 }
 
-int counter = 0;
 std::optional<Packet>
 FilePacketProducer::producePacket(PacketBuilder &builder, bool isHotConnection, bool isHotClose) {
-    counter++;
-    std::cout << counter << "\n";
     if (!this->fileStream.is_open()) {
         // try to open the file in binary input mode
         this->fileStream.open(this->filePath, std::ifstream::in | std::ifstream::binary);
@@ -40,8 +37,5 @@ FilePacketProducer::producePacket(PacketBuilder &builder, bool isHotConnection, 
     }
     this->hasClosingPacket = this->fileStream.eof() && bytes->size() == builder.getFragmentLength();
 
-    if (bytes->size() < builder.getFragmentLength())
-        return builder.getFragmentStop(bytes.value());
-    else
-        return builder.getFragment(bytes.value());
+    return builder.getFragment(bytes.value());
 }

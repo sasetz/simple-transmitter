@@ -17,7 +17,7 @@ public:
     virtual bool consumePacket(Packet packet) = 0;
     virtual DataEntity getResult() const = 0;
 
-    ~PacketConsumer() {
+    virtual ~PacketConsumer() {
         if(this->fileStream.is_open())
             this->fileStream.close();
     };

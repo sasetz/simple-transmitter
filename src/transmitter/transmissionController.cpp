@@ -15,7 +15,8 @@ TransmissionController::TransmissionController(SocketAddress address,
                                                std::shared_ptr<std::queue<DataEntity>> outputDataQueue,
                                                std::shared_ptr<std::mutex> inputMutex,
                                                std::shared_ptr<std::mutex> outputMutex,
-                                               bool &isClosing) : socket(address), closing(isClosing) {
+                                               bool &isClosing, uint16_t fragLength)
+                                               : socket(address), closing(isClosing), builder(fragLength) {
     this->inputDataQueue = std::move(inputDataQueue);
     this->outputDataQueue = std::move(outputDataQueue);
     this->inputMutex = std::move(inputMutex);
@@ -69,37 +70,43 @@ void TransmissionController::run(std::chrono::duration<int, std::milli> timeout)
     this->establishConnection();
     while (this->isRunning) {
         // debug
-        std::cout << "foreign: " << this->nextSequenceNumber << "; ";
-        std::cout << "mine: " << this->builder.getSequenceNumber() << "\n";
+//        std::cout << "foreign: " << this->nextSequenceNumber << "; ";
+//        std::cout << "mine: " << this->builder.getSequenceNumber() << "\n";
+
+        // if both clients are finished transmitting their data, finish
+        if(this->closeSent && this->closeReceived){
+            std::cout << "connection terminated successfully\n";
+            this->isRunning = false;
+            break;
+        }
         retryCount++;
         if(this->closing && this->isProducingFinished() && this->isConsumingFinished() && this->sentPackets.empty()
-        && this->outputPackets.empty()) {
+        && this->outputPackets.empty() && !this->closeSent) {
             // initiate closing sequence
-            this->closeConnection();
-            this->isRunning = false;
-            return;
+            this->initiateClose();
         }
         // push data packets to the queue
-        this->produceDataPackets();
+        if(!this->closeSent) // don't send any more packets if this side has closed
+            this->produceDataPackets();
         // resend all expired packets
         this->resendAll();
         // send packets from the queue
         this->flushQueue();
 
         // if we have a packet waiting to be processed, process it
-        if (this->hasNext()) {
-            Packet output = this->inputPackets.front();
-            this->inputPackets.pop_front();
-            this->consumeDataPacket(output);
-        } else {
+        if(!this->hasNext()) {
             if (this->retryCount > TransmissionController::maximumRetries)
                 throw ConnectionException("Connection timed out");
             auto option = this->socket.receive(timeout);
 
             this->processPacket(option);
+            continue;
         }
+
+        Packet output = this->inputPackets.front();
+        this->inputPackets.pop_front();
+        this->consumeDataPacket(output);
     }
-    this->closeConnection();
 }
 
 void TransmissionController::processPacket(std::optional<Packet> optionalPacket) {
@@ -107,7 +114,7 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
         // if no packet is accepted, send a keep-alive to check if the connection is functional
         this->send(this->builder.getKeepAlive());
         // debug
-        std::cout << "sending keep-alive\n";
+//        std::cout << "sending keep-alive\n";
         return;
     }
 
@@ -125,7 +132,7 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
         // re-acknowledgement the packet
         this->socket.send(this->builder.getAcknowledgement(optionalPacket->getSequenceNumber()));
         // debug
-        std::cout << "sending ack for previous\n";
+//        std::cout << "sending ack for previous\n";
         return;
     }
 
@@ -134,7 +141,7 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
     // process ack packets
     if (optionalPacket->isAck()) {
         // debug
-        std::cout << "ack received\n";
+//        std::cout << "ack received\n";
         if (this->processAcknowledgement(optionalPacket.value())) {
             this->retryCount = 0;
         }
@@ -149,7 +156,7 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
     // process keep-alive packets
     if (optionalPacket->isKeepAlive()) {
         // debug
-        std::cout << "keep-alive received, sending ack\n";
+//        std::cout << "keep-alive received, sending ack\n";
         this->acknowledgePacket(optionalPacket.value());
         return;
     }
@@ -158,6 +165,7 @@ void TransmissionController::processPacket(std::optional<Packet> optionalPacket)
         // debug
         std::cout << "received closing packet\n";
         this->acknowledgePacket(optionalPacket.value());
+        this->closeReceived = true;
         this->closing = true;
 
         // closing packet may be also hot closing packet
@@ -212,7 +220,7 @@ bool TransmissionController::processAcknowledgement(const Packet &packet) {
             // if we get an ack, the packet that we got will be processed
             this->sentPackets.erase(sentPacket);
             // debug
-            std::cout << "acknowledged\n";
+//            std::cout << "acknowledged\n";
             return true;
         }
     }
@@ -264,7 +272,7 @@ void TransmissionController::consumeDataPacket(const Packet& packet) {
     if (packet.isFragment() || packet.isFile()) {
         // we got a packet that carries some data
 
-        std::cout << "fragment received\n";
+//        std::cout << "fragment received\n";
         auto response = this->consumer->consumePacket(packet);
         if (!response) {
             // whole data is received
@@ -283,7 +291,7 @@ void TransmissionController::produceDataPackets() {
 
     // if we are not currently producing anything, skip
     if (!this->producer) {
-        std::cout << "checking queue\n";
+//        std::cout << "checking queue\n";
         this->inputMutex->lock();
         if(this->inputDataQueue->empty()) {
             this->inputMutex->unlock();
@@ -308,8 +316,10 @@ void TransmissionController::produceDataPackets() {
         );
         this->established = true;
         if (packet) {
-            if (packet->isClose())
+            if (packet->isClose()) {
+                std::cout << "!!!sending hot close\n";
                 this->closing = true;
+            }
             this->send(packet.value());
         } else { // this data transmission is over
             this->producer.reset();
@@ -318,19 +328,12 @@ void TransmissionController::produceDataPackets() {
     }
 }
 
-void TransmissionController::closeConnection() {
+void TransmissionController::initiateClose() {
     auto packet = builder.getStop();
 
-    while(this->retryCount < this->maximumRetries) {
-        this->socket.send(packet);
-        this->retryCount++;
-        auto response = this->socket.receive(5s);
-        if(response && response->isAck() && packet.getSequenceNumber() == response->getAckNumber()) {
-            // connection termination successful
-            return;
-        }
-    }
-    std::cout << "connection terminated\n";
+    this->send(packet);
+    this->closeSent = true;
+    std::cout << "closing initiated\n";
 }
 
 bool TransmissionController::isHot() const {

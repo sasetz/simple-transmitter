@@ -12,24 +12,24 @@ SocketAddress::SocketAddress(const std::string &internal,
                              const std::string &external) {
     char addressDelimiter = ':';
     auto delimiterPosition = internal.find(addressDelimiter);
-    this->internalIp = inet_addr(internal.substr(0, delimiterPosition).c_str());
+    this->internalIp = ntohl(inet_addr(internal.substr(0, delimiterPosition).c_str()));
     // this line might drop an exception because of wrong port number, but that ok
-    this->internalPort = htons(std::stoi(internal.substr(delimiterPosition + 1, internal.size())));
+    this->internalPort = std::stoi(internal.substr(delimiterPosition + 1, internal.size()));
 
 
     delimiterPosition = external.find(addressDelimiter);
-    this->externalIp = inet_addr(external.substr(0, delimiterPosition).c_str());
+    this->externalIp = ntohl(inet_addr(external.substr(0, delimiterPosition).c_str()));
     // this line might drop an exception because of wrong port number, but that ok
-    this->externalPort = htons(std::stoi(external.substr(delimiterPosition + 1, external.size())));
+    this->externalPort = std::stoi(external.substr(delimiterPosition + 1, external.size()));
 }
 
 SocketAddress::SocketAddress(const std::string &external, uint16_t internalPort) {
     char addressDelimiter = ':';
     auto delimiterPosition = external.find(addressDelimiter);
-    this->externalIp = inet_addr(external.substr(0, delimiterPosition).c_str());
+    this->externalIp = ntohl(inet_addr(external.substr(0, delimiterPosition).c_str()));
     auto str = external.substr(delimiterPosition, external.size());
     // this line might drop an exception because of wrong port number, but that ok
-    this->externalPort = htons(std::stoi(external.substr(delimiterPosition + 1, external.size())));
+    this->externalPort = std::stoi(external.substr(delimiterPosition + 1, external.size()));
 
     this->internalPort = internalPort;
     this->internalIp = INADDR_ANY;

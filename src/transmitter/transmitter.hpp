@@ -31,8 +31,9 @@ private:
     bool textFragmented = false;
     bool hotClose = false;
     SocketAddress socketAddress;
+    uint16_t fragmentLength;
 public:
-    explicit Transmitter(SocketAddress address);
+    explicit Transmitter(SocketAddress address, uint16_t fragmentLength);
 
     void run(bool activeOpen);
 
