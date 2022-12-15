@@ -13,7 +13,7 @@ std::optional<Packet> TextPacketProducer::producePacket(PacketBuilder &builder, 
             this->hasClosingPacket = false;
 
             // if this packet is close packet, and we need to close the connection
-            if(isHotClose)
+            if (isHotClose)
                 return builder.getFragmentStop(ByteData());
 
             return builder.getFragment(ByteData());
@@ -40,7 +40,7 @@ std::optional<Packet> TextPacketProducer::producePacket(PacketBuilder &builder, 
             this->remainingText = "";
 
         this->hasClosingPacket =
-                this->remainingText.empty() && this->remainingText.size() == builder.getFragmentLength();
+                this->remainingText.size() == builder.getFragmentLength();
 
         if (isHotConnection)
             return builder.getHotTextFragmentStart(output);
@@ -55,10 +55,10 @@ std::optional<Packet> TextPacketProducer::producePacket(PacketBuilder &builder, 
     else
         this->remainingText = "";
 
-    this->hasClosingPacket = this->remainingText.empty() && this->remainingText.size() == builder.getFragmentLength();
+    this->hasClosingPacket = this->remainingText.size() == builder.getFragmentLength();
 
     // if the next packet is closing and the connection is hot close
-    if(builder.getFragmentLength() > this->remainingText.size() && isHotClose) {
+    if (builder.getFragmentLength() > this->remainingText.size() && isHotClose) {
         return builder.getTextFragmentStop(output);
     }
 

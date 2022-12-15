@@ -42,6 +42,7 @@ private:
     Socket socket;
     PacketBuilder builder;
     uint32_t nextSequenceNumber = 0;
+    std::atomic<uint16_t> &nextFragmentSize;
 
     void flushQueue();
     bool processAcknowledgement(const Packet& packet);
@@ -84,7 +85,7 @@ public:
     TransmissionController(SocketAddress address, std::shared_ptr<std::queue<DataEntity>> inputDataQueue,
                            std::shared_ptr<std::queue<DataEntity>> outputDataQueue,
                            std::shared_ptr<std::mutex> inputMutex, std::shared_ptr<std::mutex> outputMutex,
-                           bool &isClosing, uint16_t fragLength);
+                           bool &isClosing, std::atomic<uint16_t> &fragLength);
 
     // main cycle of the packet flow
     // manages connection establishment and termination

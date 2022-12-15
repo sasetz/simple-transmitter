@@ -16,6 +16,7 @@ void listen(uint16_t port, uint16_t fragmentLength) {
         std::cout << "[1] Send a file\n";
         std::cout << "[2] Send text\n";
         std::cout << "[3] Check if something arrived\n";
+        std::cout << "[4] Change fragment size\n";
 
         std::cin >> option;
         if (option == 0) {
@@ -33,13 +34,18 @@ void listen(uint16_t port, uint16_t fragmentLength) {
             std::cin >> text;
             transmitter.addText(text);
             std::cout << "Sending your text...\n";
-        } else {
+        } else if (option == 3){
             auto output = transmitter.getOutput();
             if (!output) {
                 std::cout << "No data received\n";
             } else {
                 std::cout << output.value();
             }
+        } else {
+            std::cout << "Current size: " << fragmentLength << "\n";
+            std::cout << "Enter new fragment size: ";
+            std::cin >> fragmentLength;
+            transmitter.setNextFragmentLength(fragmentLength);
         }
     }
 }
@@ -56,6 +62,7 @@ void connect(const std::string &externalSocket, uint16_t fragmentLength) {
         std::cout << "[1] Send a file\n";
         std::cout << "[2] Send text\n";
         std::cout << "[3] Check if something arrived\n";
+        std::cout << "[4] Change fragment size\n";
 
         std::cin >> option;
         if (option == 0) {
@@ -73,13 +80,18 @@ void connect(const std::string &externalSocket, uint16_t fragmentLength) {
             std::cin >> text;
             transmitter.addText(text);
             std::cout << "Sending your text...\n";
-        } else {
+        } else if (option == 3){
             auto output = transmitter.getOutput();
             if (!output) {
                 std::cout << "No data received\n";
             } else {
                 std::cout << output.value();
             }
+        } else {
+            std::cout << "Current size: " << fragmentLength << "\n";
+            std::cout << "Enter new fragment size: ";
+            std::cin >> fragmentLength;
+            transmitter.setNextFragmentLength(fragmentLength);
         }
     }
 }

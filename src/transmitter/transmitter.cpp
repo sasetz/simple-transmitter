@@ -3,19 +3,20 @@
 #include "transmissionController.hpp"
 
 using namespace std::chrono_literals;
+
 Transmitter &Transmitter::setHotConnection() {
     this->hotConnection = true;
     return *this;
 }
 
-Transmitter &Transmitter::addFile(const std::string& path) {
+Transmitter &Transmitter::addFile(const std::string &path) {
     this->inputMutex->lock();
     this->inputDataQueue->push(DataEntity(DataEntity::InputType::File, path));
     this->inputMutex->unlock();
     return *this;
 }
 
-Transmitter &Transmitter::addText(const std::string& text) {
+Transmitter &Transmitter::addText(const std::string &text) {
     this->inputMutex->lock();
     this->inputDataQueue->push(DataEntity(DataEntity::InputType::Text, text));
     this->inputMutex->unlock();
@@ -27,7 +28,7 @@ Transmitter &Transmitter::setTextFragmented() {
     return *this;
 }
 
-Transmitter::Transmitter(SocketAddress address, uint16_t fragmentLength): fragmentLength(fragmentLength) {
+Transmitter::Transmitter(SocketAddress address, uint16_t fragmentLength) : fragmentLength(fragmentLength) {
     this->socketAddress = address;
     this->closing = false;
 
@@ -47,7 +48,7 @@ void Transmitter::run(bool activeOpen) {
                                                                        this->inputMutex,
                                                                        this->outputMutex,
                                                                        std::ref(this->closing),
-                                                                       this->fragmentLength);
+                                                                       std::ref(this->nextFragmentLength));
     transmissionController->setActiveOpen(activeOpen);
     transmissionController->setHot(this->hotConnection);
     transmissionController->setQuickClose(this->hotClose);
@@ -75,7 +76,7 @@ void Transmitter::close() {
 
 std::optional<std::string> Transmitter::getOutput() {
     this->outputMutex->lock();
-    if(this->outputDataQueue->empty()) {
+    if (this->outputDataQueue->empty()) {
         this->outputMutex->unlock();
         return std::nullopt;
     }
@@ -83,11 +84,16 @@ std::optional<std::string> Transmitter::getOutput() {
     DataEntity data = this->outputDataQueue->front();
     this->outputDataQueue->pop();
     this->outputMutex->unlock();
-    switch(data.type) {
+    switch (data.type) {
         case DataEntity::InputType::File:
             return "File on path: " + data.payload + "\n";
         case DataEntity::InputType::Text:
             return "Text: " + data.payload + "\n";
     }
+    return std::nullopt;
+}
+
+void Transmitter::setNextFragmentLength(uint16_t size) {
+    Transmitter::nextFragmentLength = size;
 }
 

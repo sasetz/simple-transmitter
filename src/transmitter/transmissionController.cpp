@@ -15,8 +15,8 @@ TransmissionController::TransmissionController(SocketAddress address,
                                                std::shared_ptr<std::queue<DataEntity>> outputDataQueue,
                                                std::shared_ptr<std::mutex> inputMutex,
                                                std::shared_ptr<std::mutex> outputMutex,
-                                               bool &isClosing, uint16_t fragLength)
-                                               : socket(address), closing(isClosing), builder(fragLength) {
+                                               bool &isClosing, std::atomic<uint16_t> &fragLength)
+        : socket(address), closing(isClosing), builder(fragLength), nextFragmentSize(fragLength) {
     this->inputDataQueue = std::move(inputDataQueue);
     this->outputDataQueue = std::move(outputDataQueue);
     this->inputMutex = std::move(inputMutex);
@@ -69,24 +69,27 @@ void TransmissionController::run(std::chrono::duration<int, std::milli> timeout)
     this->isRunning = true;
     this->establishConnection();
     while (this->isRunning) {
+        if(this->nextFragmentSize != builder.getFragmentLength() && !this->producer) {
+            this->builder.setFragmentLength(this->nextFragmentSize);
+        }
         // debug
 //        std::cout << "foreign: " << this->nextSequenceNumber << "; ";
 //        std::cout << "mine: " << this->builder.getSequenceNumber() << "\n";
 
         // if both clients are finished transmitting their data, finish
-        if(this->closeSent && this->closeReceived){
+        if (this->closeSent && this->closeReceived) {
             std::cout << "connection terminated successfully\n";
             this->isRunning = false;
             break;
         }
         retryCount++;
-        if(this->closing && this->isProducingFinished() && this->isConsumingFinished() && this->sentPackets.empty()
-        && this->outputPackets.empty() && !this->closeSent) {
+        if (this->closing && this->isProducingFinished() && this->isConsumingFinished() && this->sentPackets.empty()
+            && this->outputPackets.empty() && !this->closeSent) {
             // initiate closing sequence
             this->initiateClose();
         }
         // push data packets to the queue
-        if(!this->closeSent) // don't send any more packets if this side has closed
+        if (!this->closeSent) // don't send any more packets if this side has closed
             this->produceDataPackets();
         // resend all expired packets
         this->resendAll();
@@ -94,7 +97,7 @@ void TransmissionController::run(std::chrono::duration<int, std::milli> timeout)
         this->flushQueue();
 
         // if we have a packet waiting to be processed, process it
-        if(!this->hasNext()) {
+        if (!this->hasNext()) {
             if (this->retryCount > TransmissionController::maximumRetries)
                 throw ConnectionException("Connection timed out");
             auto option = this->socket.receive(timeout);
@@ -255,7 +258,7 @@ void TransmissionController::resend(const Packet &packet) {
     this->socket.send(packet);
 }
 
-void TransmissionController::consumeDataPacket(const Packet& packet) {
+void TransmissionController::consumeDataPacket(const Packet &packet) {
     if (packet.isFile()) {
         // we got a packet that begins transmitting a file
         this->consumer = std::make_unique<FilePacketConsumer>();
@@ -295,7 +298,7 @@ void TransmissionController::produceDataPackets() {
     if (!this->producer) {
 //        std::cout << "checking queue\n";
         this->inputMutex->lock();
-        if(this->inputDataQueue->empty()) {
+        if (this->inputDataQueue->empty()) {
             this->inputMutex->unlock();
             return;
         }
@@ -317,7 +320,7 @@ void TransmissionController::produceDataPackets() {
                 this->builder, this->hot && !this->established, this->quickClose
         );
         this->established = true;
-        if(!packet) {
+        if (!packet) {
             std::cout << "Data transfer has been completed\n";
             this->producer.reset();
             return;

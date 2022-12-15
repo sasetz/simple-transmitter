@@ -26,6 +26,11 @@ private:
     std::shared_ptr<std::queue<DataEntity>> outputDataQueue; // queue that contains data received by the transmitter
 
     std::unique_ptr<TransmissionController> transmissionController{};
+    std::atomic<uint16_t> nextFragmentLength;
+public:
+    void setNextFragmentLength(uint16_t size);
+
+private:
 
     bool hotConnection = false;
     bool textFragmented = false;
